@@ -1,0 +1,17 @@
+[Llena el archivo con estas reglas de exclusión de Unity]
+
+Archivos temporales y caché de Unity
+
+[Llena con:] Library/ Temp/ Obj/ Logs/ UserSettings/
+
+Archivos generados por el editor
+
+[Llena con:] .vscode/ .csproj .sln *.slnx
+
+Archivos del sistema
+
+[Llena con:] .DS_Store Thumbs.db
+
+Credenciales y secretos
+
+[Llena con:] .env
