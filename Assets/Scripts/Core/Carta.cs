@@ -4,11 +4,10 @@ public enum Palo { Llama, Velo, Raiz, Abismo }
 
 public class Carta
 {
-    public Palo Palo { get; }
+    public Palo Palo { get; } //solo lectura
     public int Valor { get; }
 
-    public Carta(Palo palo, int valor)
-    {
+    public Carta(Palo palo, int valor){
         if (valor < 1 || valor > 14)
             throw new ArgumentOutOfRangeException(nameof(valor), "El valor debe estar entre 1 y 14.");
 
@@ -16,5 +15,18 @@ public class Carta
         Valor = valor;
     }
 
-    public override string ToString() => $"{Palo} {Valor}";
+    public string NombreValor{
+        get{
+            switch(Valor){
+                case 11: return "Sota";
+                case 12: return "Caballo";
+                case 13: return "Reina";
+                case 14: return "Rey";
+                default: return Valor.ToString();
+            }
+        }
+    } 
+    public override string ToString() => $"{NombreValor} de {Palo}";
+    
+    
 }
