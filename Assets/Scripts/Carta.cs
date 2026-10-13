@@ -5,7 +5,7 @@ public enum Palo { Llama, Velo, Raiz, Abismo }
 public class Carta
 {
     public Palo Palo { get; } //solo lectura
-    public int Valor { get; }
+    public int Valor { get; } //1 a 14
 
     public Carta(Palo palo, int valor){
         if (valor < 1 || valor > 14)
