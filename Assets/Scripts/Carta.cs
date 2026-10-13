@@ -2,6 +2,7 @@ using System;
 
 public enum Palo { Llama, Velo, Raiz, Abismo } 
 
+//Clase que solo guarda datos 
 public class Carta
 {
     public Palo Palo { get; } //solo lectura
