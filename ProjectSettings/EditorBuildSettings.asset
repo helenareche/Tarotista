@@ -8,5 +8,11 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/Test_Bosses.unity
+    guid: 570dba57be78121488278644b11ace39
+  - enabled: 1
+    path: Assets/Scenes/EscenaCombate.unity
+    guid: 861b6a80eff91664aa21c1fce9a906dc
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
