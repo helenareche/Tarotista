@@ -1,10 +1,11 @@
 using System;
 
-public enum Palo { Llama, Velo, Raiz, Abismo } 
+public enum Palo { Llama = 0, Velo = 1, Raiz = 2, Abismo = 3} 
 
 //Clase que solo guarda datos 
 public class Carta
 {
+    public const int BonoAfinidad = 4;
     public Palo Palo { get; } //solo lectura
     public int Valor { get; } //1 a 14
 
@@ -26,8 +27,23 @@ public class Carta
                 default: return Valor.ToString();
             }
         }
-    } 
+    }
+    // Llama > Velo > Raíz > Abismo > Llama
+    public bool TieneVentajaSobre(Carta otra){
+        if (otra == null) throw new ArgumentNullException(nameof(otra));
+        int siguientePalo = ((int)Palo + 1) % 4;
+        return siguientePalo == (int)otra.Palo;
+    }
+    // Poder final de esta carta al enfrentarse a otra
+    public int PoderContra(Carta otra){
+        if (otra == null) throw new ArgumentNullException(nameof(otra));
+        int poder = Valor;
+        if (TieneVentajaSobre(otra)){
+            poder += BonoAfinidad;
+        }
+        return poder;
+    }
+ 
     public override string ToString() => $"{NombreValor} de {Palo}";
-    
     
 }
