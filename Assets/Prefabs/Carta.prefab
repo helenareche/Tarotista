@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 3920729785744236475}
   - component: {fileID: 1003337556387532800}
   - component: {fileID: -6922103015551240335}
+  - component: {fileID: 5950984596718243540}
+  - component: {fileID: 6577309072671775126}
   m_Layer: 5
   m_Name: Carta
   m_TagString: Untagged
@@ -127,6 +129,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 44a1e7df662e33e4ab010bd019356c0c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CartaSeleccionable
+--- !u!225 &5950984596718243540
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4165289689754059731}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
+--- !u!114 &6577309072671775126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4165289689754059731}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60c31c46909886f47be210901548ac6e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CartaArrastrable
 --- !u!1 &5338643463805089351
 GameObject:
   m_ObjectHideFlags: 0
