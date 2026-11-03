@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14f5d9a0ea6724c4a9452bf6d85e3a34, type: 3}
   m_Name: ElDiablo
   m_EditorClassIdentifier: Assembly-CSharp::BossData
-  nombre: 
-  descripcionRegla: 
+  nombre: El Diablo
+  descripcionRegla: Gana todos los empates
   voluntad: 12
   esFinal: 0
-  regla: 0
+  regla: 1
   imagen: {fileID: 0}

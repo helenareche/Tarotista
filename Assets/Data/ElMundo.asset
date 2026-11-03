@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14f5d9a0ea6724c4a9452bf6d85e3a34, type: 3}
   m_Name: ElMundo
   m_EditorClassIdentifier: Assembly-CSharp::BossData
-  nombre: 
-  descripcionRegla: 
-  voluntad: 12
-  esFinal: 0
+  nombre: ElMundo
+  descripcionRegla: Boss final
+  voluntad: 30
+  esFinal: 1
   regla: 0
   imagen: {fileID: 0}

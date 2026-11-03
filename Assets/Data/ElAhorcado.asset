@@ -16,5 +16,5 @@ MonoBehaviour:
   descripcionRegla: 'Invierte el poder: gana la carta con menos Poder.'
   voluntad: 12
   esFinal: 0
-  regla: 0
+  regla: 2
   imagen: {fileID: 0}
