@@ -45,11 +45,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   bossesPrueba:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: d122f2fc77250e64a88339ae4baa353d, type: 2}
+  - {fileID: 11400000, guid: 7efc6e3d6f0f65844a1131ab52b82619, type: 2}
+  - {fileID: 11400000, guid: 7d768fe6ecb73814f964c25f27b46f16, type: 2}
   bossesFinales:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 132bf515b1b8c8a4c863f24905b6a4e0, type: 2}
   aliento: 10
   alientoMaximo: 10
   habilidades: []

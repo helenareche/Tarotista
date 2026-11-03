@@ -12,7 +12,7 @@ public class CartaDestinoUI : MonoBehaviour
     public Color colorOculta = new Color(0.35f, 0.2f, 0.5f);
     public Color colorResuelta = new Color(0.3f, 0.3f, 0.3f);
 
-    public void Configurar(int indice, BossData boss, bool resuelta, bool esFinal,
+    public void Configurar(int indice, BossData boss, bool resuelta, bool saltada, bool esFinal,
                            bool bloqueada, System.Action<int> alJugar, System.Action<int> alSaltar)
     {
         botonJugar.onClick.RemoveAllListeners();
@@ -20,9 +20,18 @@ public class CartaDestinoUI : MonoBehaviour
         botonJugar.onClick.AddListener(() => alJugar(indice));
         botonSaltar.onClick.AddListener(() => alSaltar(indice));
 
+        if (boss == null)
+        {
+            textoNombre.text = "(sin boss)";
+            botonJugar.gameObject.SetActive(false);
+            botonSaltar.gameObject.SetActive(false);
+            return;
+        }
+
         if (resuelta)
         {
-            textoNombre.text = boss.nombre + "\n(hecha)";
+            // Saltada: no se revela el boss. Jugada: se muestra su nombre.
+            textoNombre.text = saltada ? "Saltada" : boss.nombre + "\n(hecha)";
             fondo.color = colorResuelta;
             botonJugar.gameObject.SetActive(false);
             botonSaltar.gameObject.SetActive(false);

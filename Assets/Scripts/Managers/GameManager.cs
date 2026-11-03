@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     [Header("Estado de la partida")]
     public BossData[] pruebas = new BossData[3];
     public bool[] pruebaResuelta = new bool[3];
+    public bool[] pruebaSaltada = new bool[3];
     public BossData bossFinal;
     public BossData bossActual;
     public int indiceActual = -1; // 0-2 = prueba, 3 = final
@@ -35,6 +36,7 @@ public class GameManager : MonoBehaviour
         aliento = 10;
         habilidades.Clear();
         pruebaResuelta = new bool[3];
+        pruebaSaltada = new bool[3];
         indiceActual = -1;
         bossActual = null;
         victoriaFinal = false;
@@ -53,12 +55,14 @@ public class GameManager : MonoBehaviour
     {
         aliento = Mathf.Min(aliento + 3, alientoMaximo);
         pruebaResuelta[i] = true;
+        pruebaSaltada[i] = true;
     }
 
     public void GanarPrueba(int i)
     {
         aliento = Mathf.Min(aliento + alientoMaximo / 2, alientoMaximo);
         pruebaResuelta[i] = true;
+        pruebaSaltada[i] = false;
         habilidades.Add(pruebas[i].nombre); // placeholder de habilidad
     }
 
