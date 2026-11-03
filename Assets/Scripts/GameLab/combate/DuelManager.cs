@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class DuelManager : MonoBehaviour
 {
@@ -28,8 +29,26 @@ public class DuelManager : MonoBehaviour
         while (!DueloTerminado)
             yield return Ronda();
 
-        bool gano = voluntad.EstaMuerto;
-        // aquí: dar habilidad y curar si gana, pantalla de derrota si pierde
+        bool gano = voluntad.EstaMuerto && !aliento.EstaMuerto;
+        GameManager gm = GameManager.Instance;
+
+        if (gm == null)
+        {
+            Debug.LogError("DuelManager: no se encuentra GameManager.");
+            yield break;
+        }
+
+        if (gano && gm.indiceActual >= 0 && gm.indiceActual < gm.pruebas.Length)
+        {
+            gm.GanarPrueba(gm.indiceActual);
+            SceneManager.LoadScene("02_Tablero");
+        }
+        else if (!gano)
+        {
+            gm.victoriaFinal = false;
+            Debug.Log("Derrota: cargando 04_Resultado");
+            SceneManager.LoadScene("04_Resultado");
+        }
     }
 
     private IEnumerator Ronda()
