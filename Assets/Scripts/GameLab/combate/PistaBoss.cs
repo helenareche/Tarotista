@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PistaBoss : MonoBehaviour
 {
-    public event Action<int, Carta_Combate> AlRevelarPista;
+    public event Action<int, Carta> AlRevelarPista;
 
     private int indiceRevelado = -1;
 
@@ -13,34 +13,38 @@ public class PistaBoss : MonoBehaviour
         get { return indiceRevelado; }
     }
 
-    public Carta_Combate RevelarCartaAleatoria(
-        IReadOnlyList<Carta_Combate> cartasBoss)
+    public Carta RevelarCartaAleatoria(
+        IReadOnlyList<Carta> cartasBoss)
     {
         if (cartasBoss == null)
         {
-            throw new ArgumentNullException(nameof(cartasBoss));
+            throw new ArgumentNullException(
+                nameof(cartasBoss)
+            );
         }
 
         if (cartasBoss.Count != 3)
         {
             throw new ArgumentException(
-                "El boss debe tener exactamente tres cartas colocadas.",
+                "El boss debe tener exactamente tres cartas.",
                 nameof(cartasBoss)
             );
         }
 
-        indiceRevelado = UnityEngine.Random.Range(
-            0,
-            cartasBoss.Count
-        );
+        indiceRevelado =
+            UnityEngine.Random.Range(
+                0,
+                cartasBoss.Count
+            );
 
-        Carta_Combate cartaRevelada =
+        Carta cartaRevelada =
             cartasBoss[indiceRevelado];
 
         Debug.Log(
-            "Pista del boss: posición " +
-            indiceRevelado +
-            ", carta " +
+            "PISTA DEL BOSS\n" +
+            "Posición: " +
+            NombrePosicion(indiceRevelado) +
+            "\nCarta: " +
             cartaRevelada
         );
 
@@ -58,5 +62,23 @@ public class PistaBoss : MonoBehaviour
     public void OcultarPista()
     {
         indiceRevelado = -1;
+    }
+
+    private string NombrePosicion(int indice)
+    {
+        switch (indice)
+        {
+            case 0:
+                return "Pasado";
+
+            case 1:
+                return "Presente";
+
+            case 2:
+                return "Futuro";
+
+            default:
+                return "Desconocida";
+        }
     }
 }
