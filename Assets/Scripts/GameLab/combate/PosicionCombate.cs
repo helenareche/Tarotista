@@ -45,8 +45,8 @@ public class PosicionCombate
     }
 
     public ResultadoPosicion Resolver(
-        Carta_Combate cartaJugador,
-        Carta_Combate cartaBoss)
+        Carta cartaJugador,
+        Carta cartaBoss)
     {
         return ResolutorPosicion.Resolver(
             cartaJugador,

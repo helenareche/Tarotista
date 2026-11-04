@@ -1,40 +1,64 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-
-//Clase que dibuja una carta en pantalla
 public class CartaVisual : MonoBehaviour
 {
-    public TMP_Text texto; //muestra "el valor de la figura y su palo"
-    public Image fondo; //cambia el color según el palo
-     public Carta Carta { //los datos de la carta
-        get;
-        private set; }
+    public TMP_Text texto;
+    public Image fondo;
 
-    public bool BocaArriba { //si se ve la cara o el reverso
-        get; 
-        private set; //solo este script puede modificar este atributo
+    public Carta Carta
+    {
+        get;
+        private set;
     }
 
-   //Que carta es y su estado
-    public void Configurar(Carta carta, bool bocaArriba) {
+    public bool BocaArriba
+    {
+        get;
+        private set;
+    }
+
+    public void Configurar(Carta carta, bool bocaArriba)
+    {
         Carta = carta;
         BocaArriba = bocaArriba;
         Actualizar();
     }
 
-    public void Voltear() {
+    public void MostrarCara()
+    {
+        BocaArriba = true;
+        Actualizar();
+    }
+
+    public void MostrarReverso()
+    {
+        BocaArriba = false;
+        Actualizar();
+    }
+
+    public void Voltear()
+    {
         BocaArriba = !BocaArriba;
         Actualizar();
     }
 
-    void Actualizar() {
-        if (Carta == null) return;
+    private void Actualizar()
+    {
+        if (Carta == null)
+        {
+            return;
+        }
 
-        if (BocaArriba) { //Si está boca arriba: escribe el valor y el palo
-            texto.text = Carta.NombreValor + "\n" + Carta.Palo;
-            fondo.color = ColorDelPalo(Carta.Palo);
+        if (BocaArriba)
+        {
+            texto.text =
+                Carta.NombreValor + "\n" +
+                Carta.Palo;
+
+            fondo.color =
+                ColorDelPalo(Carta.Palo);
         }
         else
         {
@@ -43,12 +67,21 @@ public class CartaVisual : MonoBehaviour
         }
     }
 
-    Color ColorDelPalo(Palo palo) {
-        switch (palo){
-            case Palo.Llama: return new Color(1f, 0.5f, 0.3f);
-            case Palo.Velo: return new Color(0.6f, 0.7f, 1f);
-            case Palo.Raiz: return new Color(0.5f, 0.8f, 0.4f);
-            default: return new Color(0.7f, 0.5f, 0.8f); // Abismo
+    private Color ColorDelPalo(Palo palo)
+    {
+        switch (palo)
+        {
+            case Palo.Llama:
+                return new Color(1f, 0.5f, 0.3f);
+
+            case Palo.Velo:
+                return new Color(0.6f, 0.7f, 1f);
+
+            case Palo.Raiz:
+                return new Color(0.5f, 0.8f, 0.4f);
+
+            default:
+                return new Color(0.7f, 0.5f, 0.8f);
         }
     }
 }

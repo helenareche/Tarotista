@@ -1,10 +1,8 @@
 public static class ResolutorPosicion
 {
-    private const int BONIFICACION_AFINIDAD = 4;
-
     public static ResultadoPosicion Resolver(
-        Carta_Combate cartaJugador,
-        Carta_Combate cartaBoss,
+        Carta cartaJugador,
+        Carta cartaBoss,
         int danioPosicion)
     {
         if (cartaJugador == null)
@@ -29,21 +27,11 @@ public static class ResolutorPosicion
             );
         }
 
-        int poderJugador = cartaJugador.Valor;
-        int poderBoss = cartaBoss.Valor;
+        int poderJugador =
+            cartaJugador.PoderContra(cartaBoss);
 
-        if (TieneVentaja(
-            cartaJugador.Palo,
-            cartaBoss.Palo))
-        {
-            poderJugador += BONIFICACION_AFINIDAD;
-        }
-        else if (TieneVentaja(
-            cartaBoss.Palo,
-            cartaJugador.Palo))
-        {
-            poderBoss += BONIFICACION_AFINIDAD;
-        }
+        int poderBoss =
+            cartaBoss.PoderContra(cartaJugador);
 
         if (poderJugador > poderBoss)
         {
@@ -74,23 +62,5 @@ public static class ResolutorPosicion
             0,
             0
         );
-    }
-
-    public static bool TieneVentaja(
-        Palos atacante,
-        Palos defensor)
-    {
-        return
-            atacante == Palos.Llama &&
-            defensor == Palos.Velo ||
-
-            atacante == Palos.Velo &&
-            defensor == Palos.Raiz ||
-
-            atacante == Palos.Raiz &&
-            defensor == Palos.Abismo ||
-
-            atacante == Palos.Abismo &&
-            defensor == Palos.Llama;
     }
 }
