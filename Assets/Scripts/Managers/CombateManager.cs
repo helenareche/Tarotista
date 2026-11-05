@@ -26,6 +26,7 @@ public class CombateManager : MonoBehaviour
     [Header("Escenas")]
     [SerializeField] private string escenaTablero = "02_Tablero";
     [SerializeField] private string escenaMenu = "01_Menu"; // pon aquí el nombre real de tu menú
+    [SerializeField] private string escenaResultado = "04_Resultado";
 
     [Header("Vida del boss")]
     [SerializeField] private int voluntadPrueba = 12;
@@ -192,9 +193,9 @@ public class CombateManager : MonoBehaviour
 
     private IEnumerator FinDerrota()
     {
-        textoResultado.text += "\nHas caído... el destino estaba escrito.";
-        yield return new WaitForSeconds(pausaFinCombate);
-        GameManager.Instance.NuevaPartida();
-        SceneManager.LoadScene(escenaMenu);
+    textoResultado.text += "\nHas caído... el destino estaba escrito.";
+    yield return new WaitForSeconds(pausaFinCombate);
+    GameManager.Instance.NuevaPartida();
+    SceneManager.LoadScene(escenaResultado);
     }
 }
