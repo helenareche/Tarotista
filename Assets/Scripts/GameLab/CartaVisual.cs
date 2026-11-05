@@ -19,6 +19,21 @@ public class CartaVisual : MonoBehaviour
         private set;
     }
 
+    private void Awake()
+    {
+        // Solo el fondo recibe clics y arrastres.
+        // Si el texto es más ancho que la carta, intercepta los clics de la carta vecina.
+        if (texto != null)
+        {
+            texto.raycastTarget = false;
+        }
+
+        if (fondo != null)
+        {
+            fondo.raycastTarget = true;
+        }
+    }
+
     public void Configurar(Carta carta, bool bocaArriba)
     {
         Carta = carta;
