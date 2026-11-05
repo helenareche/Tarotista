@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class TableroUI : MonoBehaviour
@@ -5,7 +6,7 @@ public class TableroUI : MonoBehaviour
     public static TableroUI Instancia { get; private set; }
 
     [SerializeField] private Mazo mazo;
-    [SerializeField] private SlotPosicion[] slots; // Pasado, Presente, Futuro, en ese orden
+    [SerializeField] private SlotPosicion[] slots;
 
     private CartaVisual seleccionada;
     private bool descarteUsado;
@@ -17,29 +18,67 @@ public class TableroUI : MonoBehaviour
         Instancia = this;
     }
 
-    // Lo llama CartaSeleccionable al hacer clic en una carta (para el botón Descartar)
     public void Seleccionar(CartaVisual carta)
     {
         seleccionada = carta;
     }
 
+
     public void DescartarSeleccionada()
     {
-        // Solo un descarte por ronda
+        // Solo se permite un descarte por ronda
         if (descarteUsado || seleccionada == null || mazo == null)
             return;
 
-        // No se puede descartar una carta ya colocada en un slot
+        // No permitir descartar si ya hay cartas en la mesa
+        foreach (SlotPosicion slot in slots)
+        {
+            if (slot.Ocupado)
+            {
+                Debug.Log("No puedes descartar después de colocar cartas.");
+                return;
+            }
+        }
+
+        // Solo se puede descartar una carta de la mano
         if (seleccionada.transform.parent != mazo.mano)
             return;
 
         CartaVisual carta = seleccionada;
         seleccionada = null;
         descarteUsado = true;
+
         mazo.Descartar(carta);
     }
 
-    // True cuando los tres huecos tienen carta
+
+    // NUEVO: devolver una carta colocada a la mano
+    public void DevolverCartaAMano(CartaArrastrable carta)
+    {
+        if (carta == null || mazo == null || mazo.mano == null)
+            return;
+
+        if (!carta.PuedeArrastrarse)
+            return;
+
+        SlotPosicion slot = carta.transform.parent
+            .GetComponent<SlotPosicion>();
+
+        if (slot == null)
+            return;
+
+        // Liberar la posición
+        slot.Liberar();
+
+        // Devolver la carta a la mano
+        carta.transform.SetParent(mazo.mano, false);
+        carta.transform.SetAsLastSibling();
+
+        // Limpiar selección si era esta carta
+        if (seleccionada == carta.GetComponent<CartaVisual>())
+            seleccionada = null;
+    }
+
     public bool TodasColocadas()
     {
         if (slots == null || slots.Length == 0)
@@ -50,35 +89,39 @@ public class TableroUI : MonoBehaviour
             if (!slot.Ocupado)
                 return false;
         }
+
         return true;
     }
 
-    // Cartas jugadas, en orden Pasado, Presente, Futuro
     public Carta[] ObtenerJugadas()
     {
         Carta[] jugadas = new Carta[slots.Length];
+
         for (int i = 0; i < slots.Length; i++)
         {
-            jugadas[i] = slots[i].Ocupante != null ? slots[i].Ocupante.Carta : null;
+            jugadas[i] = slots[i].Ocupante != null
+                ? slots[i].Ocupante.Carta
+                : null;
         }
+
         return jugadas;
     }
 
-    // Bloquea o desbloquea el arrastre de las cartas colocadas
     public void BloquearSlots(bool bloquear)
     {
         foreach (SlotPosicion slot in slots)
         {
             if (slot.Ocupado)
             {
-                CartaArrastrable arr = slot.Ocupante.GetComponent<CartaArrastrable>();
+                CartaArrastrable arr =
+                    slot.Ocupante.GetComponent<CartaArrastrable>();
+
                 if (arr != null)
                     arr.PuedeArrastrarse = !bloquear;
             }
         }
     }
 
-    // Al terminar la resolución: descarta lo jugado y vuelve a robar hasta 5
     public void LimpiarSlots()
     {
         foreach (SlotPosicion slot in slots)

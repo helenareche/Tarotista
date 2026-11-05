@@ -1,9 +1,11 @@
+
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(CanvasGroup))]
 public class CartaArrastrable : MonoBehaviour,
-    IBeginDragHandler, IDragHandler, IEndDragHandler
+    IBeginDragHandler, IDragHandler, IEndDragHandler,
+    IPointerClickHandler
 {
     private CanvasGroup grupo;
     private RectTransform rect;
@@ -14,7 +16,6 @@ public class CartaArrastrable : MonoBehaviour,
     private SlotPosicion slotOrigen;
     private bool soltadaEnSlot;
 
-    // Poner a false cuando se resuelve la ronda para que no se puedan mover
     public bool PuedeArrastrarse { get; set; } = true;
 
     private void Awake()
@@ -23,11 +24,29 @@ public class CartaArrastrable : MonoBehaviour,
         rect = GetComponent<RectTransform>();
     }
 
+    // NUEVO: retirar una carta colocada haciendo clic
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (!PuedeArrastrarse)
+            return;
+
+        if (eventData.button != PointerEventData.InputButton.Left)
+            return;
+
+        SlotPosicion slot =
+            transform.parent.GetComponent<SlotPosicion>();
+
+        if (slot != null && TableroUI.Instancia != null)
+        {
+            TableroUI.Instancia.DevolverCartaAMano(this);
+        }
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (!PuedeArrastrarse)
         {
-            eventData.pointerDrag = null; // cancela el arrastre
+            eventData.pointerDrag = null;
             return;
         }
 
@@ -36,26 +55,33 @@ public class CartaArrastrable : MonoBehaviour,
         indiceInicial = transform.GetSiblingIndex();
 
         slotOrigen = padreInicial.GetComponent<SlotPosicion>();
+
         if (slotOrigen != null)
         {
             slotOrigen.Liberar();
         }
 
-        // Se saca al Canvas raíz para que se dibuje por encima de todo
         Canvas canvas = GetComponentInParent<Canvas>().rootCanvas;
         rectCanvas = canvas.GetComponent<RectTransform>();
+
         transform.SetParent(canvas.transform, true);
         transform.SetAsLastSibling();
 
-        // Sin esto la propia carta bloquea el ratón y el hueco no detecta el soltado
         grupo.blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (!PuedeArrastrarse || rectCanvas == null)
+            return;
+
         Vector3 mundo;
+
         if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
-            rectCanvas, eventData.position, eventData.pressEventCamera, out mundo))
+            rectCanvas,
+            eventData.position,
+            eventData.pressEventCamera,
+            out mundo))
         {
             transform.position = mundo;
         }
@@ -71,7 +97,6 @@ public class CartaArrastrable : MonoBehaviour,
         }
     }
 
-    // Lo llama el SlotPosicion cuando acepta la carta
     public void MarcarColocada()
     {
         soltadaEnSlot = true;
