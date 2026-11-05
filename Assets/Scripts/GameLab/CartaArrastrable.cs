@@ -75,10 +75,37 @@ public class CartaArrastrable : MonoBehaviour,
         }
     }
 
+    // Hueco del que viene la carta (null si venía de la mano)
+    public SlotPosicion SlotOrigen
+    {
+        get { return slotOrigen; }
+    }
+
     // Lo llama el SlotPosicion cuando acepta la carta
     public void MarcarColocada()
     {
         soltadaEnSlot = true;
+    }
+
+    // Lo llama ZonaMano al soltar la carta sobre la mano
+    public void SoltarEnMano(Transform mano)
+    {
+        transform.SetParent(mano, false);
+
+        if (slotOrigen == null)
+        {
+            // Venía de la mano: recupera su sitio
+            transform.SetSiblingIndex(Mathf.Min(indiceInicial, mano.childCount - 1));
+        }
+        else
+        {
+            transform.SetAsLastSibling();
+        }
+
+        RectTransform r = GetComponent<RectTransform>();
+        r.localScale = Vector3.one;
+
+        MarcarColocada();
     }
 
     private void VolverAlOrigen()

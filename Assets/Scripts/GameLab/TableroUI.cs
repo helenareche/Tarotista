@@ -11,6 +11,7 @@ public class TableroUI : MonoBehaviour
     private bool descarteUsado;
 
     public bool DescarteUsado { get { return descarteUsado; } }
+    public Transform Mano { get { return mazo != null ? mazo.mano : null; } }
 
     private void Awake()
     {
