@@ -73,6 +73,18 @@ public static class ResolutorPosicion
             );
         }
 
+        // El Diablo: gana todos los empates (el jugador recibe el daño).
+        if (regla == ReglaBoss.GanaEmpates)
+        {
+            return new ResultadoPosicion(
+                GanadorPosicion.Boss,
+                poderJugador,
+                poderBoss,
+                danioPosicion,
+                0
+            );
+        }
+
         return new ResultadoPosicion(
             GanadorPosicion.Empate,
             poderJugador,

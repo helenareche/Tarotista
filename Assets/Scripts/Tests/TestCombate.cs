@@ -38,6 +38,11 @@ public class TestCombate : MonoBehaviour
         TestLocoCicloInvertidoCompleto();
         TestLocoMismoPaloSinVentaja();
         TestLocoCambiaGanadorDePosicion();
+        TestDiabloGanaEmpate();
+        TestDiabloEmpateConAfinidad();
+        TestDiabloNoCambiaVictoriaJugador();
+        TestDiabloNoCambiaVictoriaBoss();
+        TestEmpateSinDiabloSigueEmpate();
 
         MostrarResultado();
     }
@@ -554,6 +559,85 @@ public class TestCombate : MonoBehaviour
             invertido.PoderBoss == 7 &&
             invertido.DanioAlBoss == 2,
             "El Loco: invertir el ciclo cambia quién gana la posición"
+        );
+    }
+
+    // ---------- El Diablo (035): gana todos los empates ----------
+
+    private void TestDiabloGanaEmpate()
+    {
+        Carta jugador = new Carta(Palo.Raiz, 8);
+        Carta boss = new Carta(Palo.Raiz, 8);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.GanaEmpates);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Boss &&
+            resultado.DanioAlJugador == 2 &&
+            resultado.DanioAlBoss == 0,
+            "El Diablo: gana los empates y hace el daño de la posición"
+        );
+    }
+
+    private void TestDiabloEmpateConAfinidad()
+    {
+        // Velo 9 contra Abismo 9: no hay Afinidad entre ellos, empate a 9.
+        Carta jugador = new Carta(Palo.Velo, 9);
+        Carta boss = new Carta(Palo.Abismo, 9);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 3, ReglaBoss.GanaEmpates);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Boss &&
+            resultado.DanioAlJugador == 3,
+            "El Diablo: un empate en el Futuro te quita 3"
+        );
+    }
+
+    private void TestDiabloNoCambiaVictoriaJugador()
+    {
+        Carta jugador = new Carta(Palo.Llama, 10);
+        Carta boss = new Carta(Palo.Llama, 6);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 1, ReglaBoss.GanaEmpates);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Jugador &&
+            resultado.DanioAlBoss == 1,
+            "El Diablo: si tienes más Poder sigues ganando"
+        );
+    }
+
+    private void TestDiabloNoCambiaVictoriaBoss()
+    {
+        Carta jugador = new Carta(Palo.Llama, 3);
+        Carta boss = new Carta(Palo.Llama, 12);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.GanaEmpates);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Boss &&
+            resultado.DanioAlJugador == 2,
+            "El Diablo: si el boss tiene más Poder gana como siempre"
+        );
+    }
+
+    private void TestEmpateSinDiabloSigueEmpate()
+    {
+        Carta jugador = new Carta(Palo.Raiz, 8);
+        Carta boss = new Carta(Palo.Raiz, 8);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.Ninguna);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Empate &&
+            resultado.DanioAlJugador == 0,
+            "Sin El Diablo, los empates siguen sin hacer daño"
         );
     }
 
