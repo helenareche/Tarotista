@@ -1,6 +1,5 @@
 using System.Reflection;
 using System;
-using System.Reflection;
 using UnityEngine;
 public class TestTablero : MonoBehaviour
 {

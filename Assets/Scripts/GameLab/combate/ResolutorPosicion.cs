@@ -3,7 +3,8 @@ public static class ResolutorPosicion
     public static ResultadoPosicion Resolver(
         Carta cartaJugador,
         Carta cartaBoss,
-        int danioPosicion)
+        int danioPosicion,
+        ReglaBoss regla = ReglaBoss.Ninguna)
     {
         if (cartaJugador == null)
         {
@@ -33,7 +34,23 @@ public static class ResolutorPosicion
         int poderBoss =
             cartaBoss.PoderContra(cartaJugador);
 
-        if (poderJugador > poderBoss)
+        bool ganaJugador;
+        bool ganaBoss;
+
+        if (regla == ReglaBoss.InvierteSigno)
+        {
+            // El Ahorcado: el Poder se calcula igual (con Afinidad),
+            // pero gana la carta con MENOS Poder.
+            ganaJugador = poderJugador < poderBoss;
+            ganaBoss = poderBoss < poderJugador;
+        }
+        else
+        {
+            ganaJugador = poderJugador > poderBoss;
+            ganaBoss = poderBoss > poderJugador;
+        }
+
+        if (ganaJugador)
         {
             return new ResultadoPosicion(
                 GanadorPosicion.Jugador,
@@ -44,7 +61,7 @@ public static class ResolutorPosicion
             );
         }
 
-        if (poderBoss > poderJugador)
+        if (ganaBoss)
         {
             return new ResultadoPosicion(
                 GanadorPosicion.Boss,

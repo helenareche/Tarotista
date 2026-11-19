@@ -28,6 +28,11 @@ public class TestCombate : MonoBehaviour
         TestResolverPosicionFuturo();
         TestAplicarDanioAlBoss();
         TestAplicarDanioAlJugador();
+        TestAhorcadoGanaJugadorConMenosPoder();
+        TestAhorcadoGanaBossConMenosPoder();
+        TestAhorcadoAfinidadPerjudica();
+        TestAhorcadoEmpateSigueEmpate();
+        TestAhorcadoPosicionHaceSuDanio();
 
         MostrarResultado();
     }
@@ -389,6 +394,90 @@ public class TestCombate : MonoBehaviour
         );
 
         Destroy(objetoJugador);
+    }
+
+    // ---------- El Ahorcado (036): gana la carta con MENOS Poder ----------
+
+    private void TestAhorcadoGanaJugadorConMenosPoder()
+    {
+        Carta jugador = new Carta(Palo.Llama, 3);
+        Carta boss = new Carta(Palo.Llama, 9);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.InvierteSigno);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Jugador &&
+            resultado.DanioAlBoss == 2 &&
+            resultado.DanioAlJugador == 0,
+            "El Ahorcado: el jugador gana con menos Poder"
+        );
+    }
+
+    private void TestAhorcadoGanaBossConMenosPoder()
+    {
+        Carta jugador = new Carta(Palo.Velo, 12);
+        Carta boss = new Carta(Palo.Velo, 2);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 3, ReglaBoss.InvierteSigno);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Boss &&
+            resultado.DanioAlJugador == 3 &&
+            resultado.DanioAlBoss == 0,
+            "El Ahorcado: el boss gana con menos Poder"
+        );
+    }
+
+    private void TestAhorcadoAfinidadPerjudica()
+    {
+        // Llama > Velo: el jugador suma +4 (5 + 4 = 9) y el boss se queda en 7.
+        // Con El Ahorcado gana el menor, así que gana el boss.
+        Carta jugador = new Carta(Palo.Llama, 5);
+        Carta boss = new Carta(Palo.Velo, 7);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 1, ReglaBoss.InvierteSigno);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Boss &&
+            resultado.PoderJugador == 9 &&
+            resultado.PoderBoss == 7,
+            "El Ahorcado: la Afinidad suma +4 y eso perjudica"
+        );
+    }
+
+    private void TestAhorcadoEmpateSigueEmpate()
+    {
+        Carta jugador = new Carta(Palo.Raiz, 6);
+        Carta boss = new Carta(Palo.Raiz, 6);
+
+        ResultadoPosicion resultado =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.InvierteSigno);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Empate &&
+            resultado.DanioAlJugador == 0 &&
+            resultado.DanioAlBoss == 0,
+            "El Ahorcado: los empates siguen siendo empate"
+        );
+    }
+
+    private void TestAhorcadoPosicionHaceSuDanio()
+    {
+        PosicionCombate futuro = new PosicionCombate(TipoPosicion.Futuro);
+        Carta jugador = new Carta(Palo.Abismo, 1);
+        Carta boss = new Carta(Palo.Abismo, 14);
+
+        ResultadoPosicion resultado =
+            futuro.Resolver(jugador, boss, ReglaBoss.InvierteSigno);
+
+        Comprobar(
+            resultado.Ganador == GanadorPosicion.Jugador &&
+            resultado.DanioAlBoss == 3,
+            "El Ahorcado: ganar el Futuro con menos Poder hace 3 de daño"
+        );
     }
 
     private void Comprobar(bool condicion, string nombre)

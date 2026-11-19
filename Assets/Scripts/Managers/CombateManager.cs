@@ -42,11 +42,13 @@ public class CombateManager : MonoBehaviour
     private bool resolviendo;
     private bool combateTerminado;
     private bool esFinal;
+    private ReglaBoss reglaBoss = ReglaBoss.Ninguna;
 
     private void Start()
     {
         GameManager gm = GameManager.Instance;
         esFinal = gm.indiceActual == 3;
+        if (gm.bossActual != null) reglaBoss = gm.bossActual.regla;
 
         vidaJugador.Inicializar(gm.alientoMaximo, gm.aliento);
         vidaBoss.Inicializar(esFinal ? voluntadFinal : voluntadPrueba);
@@ -100,7 +102,7 @@ public class CombateManager : MonoBehaviour
 
         for (int i = 0; i < 3; i++)
         {
-            ResultadoPosicion r = posiciones[i].Resolver(jugador[i], boss[i]);
+            ResultadoPosicion r = posiciones[i].Resolver(jugador[i], boss[i], reglaBoss);
 
             MostrarResultado(posiciones[i].Tipo, jugador[i], boss[i], r);
 
@@ -198,4 +200,4 @@ public class CombateManager : MonoBehaviour
     GameManager.Instance.NuevaPartida();
     SceneManager.LoadScene(escenaResultado);
     }
-}
+}

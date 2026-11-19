@@ -46,12 +46,14 @@ public class PosicionCombate
 
     public ResultadoPosicion Resolver(
         Carta cartaJugador,
-        Carta cartaBoss)
+        Carta cartaBoss,
+        ReglaBoss regla = ReglaBoss.Ninguna)
     {
         return ResolutorPosicion.Resolver(
             cartaJugador,
             cartaBoss,
-            Danio
+            Danio,
+            regla
         );
     }
 }
