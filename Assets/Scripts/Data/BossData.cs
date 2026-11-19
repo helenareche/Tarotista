@@ -6,7 +6,8 @@ public enum ReglaBoss
     GanaEmpates,   // El Diablo
     InvierteSigno, // El Ahorcado
     OcultaPista,   // La Luna
-    PoderExtra     // El Mago (opcional)
+    PoderExtra,    // El Mago (opcional)
+    InvierteCiclo  // El Loco: el ciclo de Afinidades puede invertirse cada ronda
 }
 
 [CreateAssetMenu(fileName = "NuevoBoss", menuName = "Tarotista/Boss")]

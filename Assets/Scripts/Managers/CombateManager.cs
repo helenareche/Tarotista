@@ -32,6 +32,10 @@ public class CombateManager : MonoBehaviour
     [SerializeField] private int voluntadPrueba = 12;
     [SerializeField] private int voluntadFinal = 30;
 
+    [Header("El Loco")]
+    [Range(0f, 1f)]
+    [SerializeField] private float probabilidadInvertirCiclo = 0.5f;
+
     private readonly PosicionCombate[] posiciones =
     {
         new PosicionCombate(TipoPosicion.Pasado),
@@ -100,9 +104,23 @@ public class CombateManager : MonoBehaviour
         repartoBoss.RevelarTodas();
         yield return new WaitForSeconds(pausaRevelado);
 
+        // El Loco: cada ronda puede invertir el ciclo de Afinidades.
+        // Se decide y se anuncia después de revelar las cartas.
+        bool cicloInvertido = false;
+        if (reglaBoss == ReglaBoss.InvierteCiclo)
+        {
+            cicloInvertido = Random.value < probabilidadInvertirCiclo;
+            string aviso = cicloInvertido
+                ? "¡El Loco invierte el ciclo! Velo > Llama, Raíz > Velo, Abismo > Raíz, Llama > Abismo"
+                : "El Loco deja el ciclo normal: Llama > Velo > Raíz > Abismo > Llama";
+            Debug.Log(aviso);
+            if (textoResultado != null) textoResultado.text += aviso + "\n";
+            yield return new WaitForSeconds(pausaRevelado);
+        }
+
         for (int i = 0; i < 3; i++)
         {
-            ResultadoPosicion r = posiciones[i].Resolver(jugador[i], boss[i], reglaBoss);
+            ResultadoPosicion r = posiciones[i].Resolver(jugador[i], boss[i], reglaBoss, cicloInvertido);
 
             MostrarResultado(posiciones[i].Tipo, jugador[i], boss[i], r);
 
@@ -200,4 +218,4 @@ public class CombateManager : MonoBehaviour
     GameManager.Instance.NuevaPartida();
     SceneManager.LoadScene(escenaResultado);
     }
-}
+}

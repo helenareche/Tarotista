@@ -33,6 +33,11 @@ public class TestCombate : MonoBehaviour
         TestAhorcadoAfinidadPerjudica();
         TestAhorcadoEmpateSigueEmpate();
         TestAhorcadoPosicionHaceSuDanio();
+        TestLocoCicloNormalNoCambia();
+        TestLocoCicloInvertido();
+        TestLocoCicloInvertidoCompleto();
+        TestLocoMismoPaloSinVentaja();
+        TestLocoCambiaGanadorDePosicion();
 
         MostrarResultado();
     }
@@ -477,6 +482,78 @@ public class TestCombate : MonoBehaviour
             resultado.Ganador == GanadorPosicion.Jugador &&
             resultado.DanioAlBoss == 3,
             "El Ahorcado: ganar el Futuro con menos Poder hace 3 de daño"
+        );
+    }
+
+    // ---------- El Loco (041): el ciclo de Afinidades se invierte ----------
+
+    private void TestLocoCicloNormalNoCambia()
+    {
+        Carta llama = new Carta(Palo.Llama, 5);
+        Carta velo = new Carta(Palo.Velo, 5);
+
+        Comprobar(
+            llama.TieneVentajaSobre(velo, false) &&
+            !velo.TieneVentajaSobre(llama, false),
+            "El Loco: sin invertir, Llama sigue ganando a Velo"
+        );
+    }
+
+    private void TestLocoCicloInvertido()
+    {
+        Carta llama = new Carta(Palo.Llama, 5);
+        Carta velo = new Carta(Palo.Velo, 5);
+
+        Comprobar(
+            velo.TieneVentajaSobre(llama, true) &&
+            !llama.TieneVentajaSobre(velo, true),
+            "El Loco: con el ciclo invertido, Velo gana a Llama"
+        );
+    }
+
+    private void TestLocoCicloInvertidoCompleto()
+    {
+        // Invertido: Velo > Llama, Raíz > Velo, Abismo > Raíz, Llama > Abismo
+        bool correcto =
+            new Carta(Palo.Velo, 1).TieneVentajaSobre(new Carta(Palo.Llama, 1), true) &&
+            new Carta(Palo.Raiz, 1).TieneVentajaSobre(new Carta(Palo.Velo, 1), true) &&
+            new Carta(Palo.Abismo, 1).TieneVentajaSobre(new Carta(Palo.Raiz, 1), true) &&
+            new Carta(Palo.Llama, 1).TieneVentajaSobre(new Carta(Palo.Abismo, 1), true);
+
+        Comprobar(correcto, "El Loco: el ciclo invertido funciona con los cuatro palos");
+    }
+
+    private void TestLocoMismoPaloSinVentaja()
+    {
+        Carta a = new Carta(Palo.Raiz, 4);
+        Carta b = new Carta(Palo.Raiz, 9);
+
+        Comprobar(
+            !a.TieneVentajaSobre(b, true) &&
+            a.PoderContra(b, true) == 4,
+            "El Loco: con el mismo palo no hay ventaja aunque se invierta"
+        );
+    }
+
+    private void TestLocoCambiaGanadorDePosicion()
+    {
+        // Normal: Llama 7 + 4 = 11 contra Velo 5 -> gana el boss.
+        // Invertido: Velo 5 + 4 = 9 contra Llama 7 -> gana el jugador.
+        Carta jugador = new Carta(Palo.Velo, 5);
+        Carta boss = new Carta(Palo.Llama, 7);
+
+        ResultadoPosicion normal =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.InvierteCiclo, false);
+        ResultadoPosicion invertido =
+            ResolutorPosicion.Resolver(jugador, boss, 2, ReglaBoss.InvierteCiclo, true);
+
+        Comprobar(
+            normal.Ganador == GanadorPosicion.Boss &&
+            invertido.Ganador == GanadorPosicion.Jugador &&
+            invertido.PoderJugador == 9 &&
+            invertido.PoderBoss == 7 &&
+            invertido.DanioAlBoss == 2,
+            "El Loco: invertir el ciclo cambia quién gana la posición"
         );
     }
 

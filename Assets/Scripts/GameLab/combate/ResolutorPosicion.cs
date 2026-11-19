@@ -4,7 +4,8 @@ public static class ResolutorPosicion
         Carta cartaJugador,
         Carta cartaBoss,
         int danioPosicion,
-        ReglaBoss regla = ReglaBoss.Ninguna)
+        ReglaBoss regla = ReglaBoss.Ninguna,
+        bool cicloInvertido = false)
     {
         if (cartaJugador == null)
         {
@@ -29,10 +30,10 @@ public static class ResolutorPosicion
         }
 
         int poderJugador =
-            cartaJugador.PoderContra(cartaBoss);
+            cartaJugador.PoderContra(cartaBoss, cicloInvertido);
 
         int poderBoss =
-            cartaBoss.PoderContra(cartaJugador);
+            cartaBoss.PoderContra(cartaJugador, cicloInvertido);
 
         bool ganaJugador;
         bool ganaBoss;

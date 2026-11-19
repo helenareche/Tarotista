@@ -29,16 +29,21 @@ public class Carta
         }
     }
     // Llama > Velo > Raíz > Abismo > Llama
-    public bool TieneVentajaSobre(Carta otra){
+    // Con cicloInvertido (El Loco): Velo > Llama, Raíz > Velo, Abismo > Raíz, Llama > Abismo
+    public bool TieneVentajaSobre(Carta otra, bool cicloInvertido = false){
         if (otra == null) throw new ArgumentNullException(nameof(otra));
+        if (cicloInvertido){
+            int siguienteDelOtro = ((int)otra.Palo + 1) % 4;
+            return siguienteDelOtro == (int)Palo;
+        }
         int siguientePalo = ((int)Palo + 1) % 4;
         return siguientePalo == (int)otra.Palo;
     }
     // Poder final de esta carta al enfrentarse a otra
-    public int PoderContra(Carta otra){
+    public int PoderContra(Carta otra, bool cicloInvertido = false){
         if (otra == null) throw new ArgumentNullException(nameof(otra));
         int poder = Valor;
-        if (TieneVentajaSobre(otra)){
+        if (TieneVentajaSobre(otra, cicloInvertido)){
             poder += BonoAfinidad;
         }
         return poder;

@@ -47,13 +47,15 @@ public class PosicionCombate
     public ResultadoPosicion Resolver(
         Carta cartaJugador,
         Carta cartaBoss,
-        ReglaBoss regla = ReglaBoss.Ninguna)
+        ReglaBoss regla = ReglaBoss.Ninguna,
+        bool cicloInvertido = false)
     {
         return ResolutorPosicion.Resolver(
             cartaJugador,
             cartaBoss,
             Danio,
-            regla
+            regla,
+            cicloInvertido
         );
     }
 }
