@@ -38,43 +38,38 @@ public class CartaVisual : MonoBehaviour
     {
         if (Carta == null) return;
 
-        if (BocaArriba)
+        if (banco == null)
+            Debug.LogWarning("CartaVisual sin BancoSprites asignado en " + name);
+
+        Sprite sprite = null;
+        if (banco != null)
+            sprite = BocaArriba ? banco.Menor(Carta.Palo, Carta.Valor) : banco.reverso;
+
+        if (sprite != null)
         {
-            Sprite sprite = banco != null ? banco.Menor(Carta.Palo, Carta.Valor) : null;
-            if (banco == null)
-                Debug.LogWarning("CartaVisual sin BancoSprites asignado en " + name);
-
-            if (sprite != null)
-            {
-                fondo.sprite = sprite;
-                fondo.color = Color.white;
-                if (texto != null)
-                {
-                    texto.text = Carta.NombreValor + "\n" + Carta.Palo;
-                    texto.gameObject.SetActive(mostrarTextoSobreImagen);
-                }
-                return;
-            }
-
-            // Plan B si falta la imagen
-            fondo.sprite = null;
+            fondo.sprite = sprite;
+            fondo.color = Color.white;
             if (texto != null)
             {
-                texto.gameObject.SetActive(true);
-                texto.text = Carta.NombreValor + "\n" + Carta.Palo;
+                texto.text = BocaArriba ? Carta.NombreValor + "\n" + Carta.Palo : "?";
+                texto.gameObject.SetActive(mostrarTextoSobreImagen);
             }
+            return;
+        }
+
+        // Plan B si falta la imagen
+        fondo.sprite = null;
+        if (texto != null) texto.gameObject.SetActive(true);
+
+        if (BocaArriba)
+        {
+            texto.text = Carta.NombreValor + "\n" + Carta.Palo;
             fondo.color = ColorDelPalo(Carta.Palo);
         }
         else
         {
-            // Boca abajo: gris con "?"
-            fondo.sprite = null;
+            texto.text = "?";
             fondo.color = Color.gray;
-            if (texto != null)
-            {
-                texto.gameObject.SetActive(true);
-                texto.text = "?";
-            }
         }
     }
 

@@ -5,6 +5,7 @@ public class BancoSprites : ScriptableObject
 {
     // Orden: Llama 1-14, Velo 1-14, Raíz 1-14, Abismo 1-14
     public Sprite[] menores = new Sprite[56];
+    public Sprite reverso;
 
     public Sprite Menor(Palo palo, int valor)
     {
