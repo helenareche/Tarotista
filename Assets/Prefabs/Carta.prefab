@@ -95,6 +95,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CartaVisual
   texto: {fileID: 2849521766851041583}
   fondo: {fileID: 9076324227999892038}
+  banco: {fileID: 11400000, guid: 8b9a72adbcedb3a4d911c0a5dd9d864a, type: 2}
+  mostrarTextoSobreImagen: 0
 --- !u!114 &1003337556387532800
 MonoBehaviour:
   m_ObjectHideFlags: 0
