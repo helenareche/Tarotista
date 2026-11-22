@@ -1328,6 +1328,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameManager
       objectReference: {fileID: 0}
+    - target: {fileID: 8289724596219903186, guid: f8fa5feab459a1a4d910b4d48d67d10d, type: 3}
+      propertyPath: bossesPrueba.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8289724596219903186, guid: f8fa5feab459a1a4d910b4d48d67d10d, type: 3}
+      propertyPath: 'bossesPrueba.Array.data[4]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 441fa197baaa7c148a314d9730cf1aae, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
