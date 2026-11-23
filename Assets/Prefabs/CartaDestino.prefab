@@ -717,14 +717,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -5694177062110357366, guid: 5745b2fdcce04dc4c9ba2b7e1d9cfd47, type: 3}
+  m_Sprite: {fileID: -3730870798186739715, guid: f4c73a8f2ac26014bb8954653e17bd06, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -746,9 +746,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2abaaaf77deb1454189c4eb8bd0019dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CartaDestinoUI
-  textoNombre: {fileID: 4687115037527365098}
   botonJugar: {fileID: 6132183680609325478}
   botonSaltar: {fileID: 4285028795310248318}
   fondo: {fileID: 903698262955374717}
   colorOculta: {r: 1, g: 1, b: 1, a: 1}
-  colorResuelta: {r: 0.3, g: 0.3, b: 0.3, a: 0}
+  colorResuelta: {r: 1, g: 1, b: 1, a: 1}
