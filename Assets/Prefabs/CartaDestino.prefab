@@ -694,7 +694,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 300, y: 450}
+  m_SizeDelta: {x: 400, y: 550}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4444252468813607034
 CanvasRenderer:
@@ -717,15 +717,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.56725055, g: 0.120149404, b: 0.8490566, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: -5694177062110357366, guid: 5745b2fdcce04dc4c9ba2b7e1d9cfd47, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -750,5 +750,5 @@ MonoBehaviour:
   botonJugar: {fileID: 6132183680609325478}
   botonSaltar: {fileID: 4285028795310248318}
   fondo: {fileID: 903698262955374717}
-  colorOculta: {r: 0.35, g: 0.2, b: 0.5, a: 1}
-  colorResuelta: {r: 0.3, g: 0.3, b: 0.3, a: 1}
+  colorOculta: {r: 1, g: 1, b: 1, a: 1}
+  colorResuelta: {r: 0.3, g: 0.3, b: 0.3, a: 0}

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class CartaDestinoUI : MonoBehaviour
 {
-    public TextMeshProUGUI textoNombre;
+    //public TextMeshProUGUI textoNombre;
     public Button botonJugar;
     public Button botonSaltar;
     public Image fondo;
@@ -22,7 +22,7 @@ public class CartaDestinoUI : MonoBehaviour
 
         if (boss == null)
         {
-            textoNombre.text = "(sin boss)";
+          //textoNombre.text = "(sin boss)";
             botonJugar.gameObject.SetActive(false);
             botonSaltar.gameObject.SetActive(false);
             return;
@@ -31,7 +31,7 @@ public class CartaDestinoUI : MonoBehaviour
         if (resuelta)
         {
             // Saltada: no se revela el boss. Jugada: se muestra su nombre.
-            textoNombre.text = saltada ? "Saltada" : boss.nombre + "\n(hecha)";
+           // textoNombre.text = saltada ? "Saltada" : boss.nombre + "\n(hecha)";
             fondo.color = colorResuelta;
             botonJugar.gameObject.SetActive(false);
             botonSaltar.gameObject.SetActive(false);
@@ -39,7 +39,7 @@ public class CartaDestinoUI : MonoBehaviour
         }
 
         fondo.color = colorOculta;
-        textoNombre.text = bloqueada ? "???\n(bloqueada)" : (esFinal ? "BOSS FINAL" : "???");
+       // textoNombre.text = bloqueada ? "???\n(bloqueada)" : (esFinal ? "BOSS FINAL" : "???");
         botonJugar.gameObject.SetActive(!bloqueada);
         botonSaltar.gameObject.SetActive(!bloqueada && !esFinal);
     }
