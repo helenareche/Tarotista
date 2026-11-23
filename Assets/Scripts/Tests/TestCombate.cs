@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TestCombate : MonoBehaviour
@@ -43,6 +44,11 @@ public class TestCombate : MonoBehaviour
         TestDiabloNoCambiaVictoriaJugador();
         TestDiabloNoCambiaVictoriaBoss();
         TestEmpateSinDiabloSigueEmpate();
+        TestLunaSinHabilidadValoresNormales();
+        TestLunaConHabilidad();
+        TestLunaOtraHabilidadNoAfecta();
+        TestLunaRevelaDosCartasDistintas();
+        TestLunaCantidadInvalida();
 
         MostrarResultado();
     }
@@ -639,6 +645,104 @@ public class TestCombate : MonoBehaviour
             resultado.DanioAlJugador == 0,
             "Sin El Diablo, los empates siguen sin hacer daño"
         );
+    }
+
+    // ---------- Habilidad de La Luna (046) ----------
+
+    private void TestLunaSinHabilidadValoresNormales()
+    {
+        List<string> habilidades = new List<string>();
+
+        Comprobar(
+            HabilidadesJugador.TamanoMano(habilidades) == 5 &&
+            HabilidadesJugador.CartasDePista(habilidades) == 1 &&
+            HabilidadesJugador.TamanoMano(null) == 5 &&
+            HabilidadesJugador.CartasDePista(null) == 1,
+            "La Luna: sin la habilidad, mano de 5 y 1 pista"
+        );
+    }
+
+    private void TestLunaConHabilidad()
+    {
+        List<string> habilidades = new List<string> { "El Ahorcado", "La Luna" };
+
+        Comprobar(
+            HabilidadesJugador.TamanoMano(habilidades) == 4 &&
+            HabilidadesJugador.CartasDePista(habilidades) == 2,
+            "La Luna: con la habilidad, mano de 4 y 2 pistas"
+        );
+    }
+
+    private void TestLunaOtraHabilidadNoAfecta()
+    {
+        List<string> habilidades = new List<string> { "El Diablo" };
+
+        Comprobar(
+            HabilidadesJugador.TamanoMano(habilidades) == 5 &&
+            HabilidadesJugador.CartasDePista(habilidades) == 1,
+            "La Luna: otras habilidades no cambian la mano ni las pistas"
+        );
+    }
+
+    private void TestLunaRevelaDosCartasDistintas()
+    {
+        GameObject objeto = new GameObject("PistaLuna_Prueba");
+        PistaBoss pista = objeto.AddComponent<PistaBoss>();
+
+        Carta[] cartas =
+        {
+            new Carta(Palo.Llama, 1),
+            new Carta(Palo.Velo, 2),
+            new Carta(Palo.Raiz, 3)
+        };
+
+        bool correcto = true;
+
+        // Se repite varias veces porque la elección es aleatoria
+        for (int intento = 0; intento < 20; intento++)
+        {
+            List<int> indices = pista.RevelarCartasAleatorias(cartas, 2);
+
+            if (indices.Count != 2 ||
+                indices[0] == indices[1] ||
+                indices[0] < 0 || indices[0] > 2 ||
+                indices[1] < 0 || indices[1] > 2)
+            {
+                correcto = false;
+            }
+        }
+
+        Destroy(objeto);
+
+        Comprobar(correcto, "La Luna: se revelan 2 cartas distintas del boss");
+    }
+
+    private void TestLunaCantidadInvalida()
+    {
+        GameObject objeto = new GameObject("PistaLuna_Prueba2");
+        PistaBoss pista = objeto.AddComponent<PistaBoss>();
+
+        Carta[] cartas =
+        {
+            new Carta(Palo.Llama, 1),
+            new Carta(Palo.Velo, 2),
+            new Carta(Palo.Raiz, 3)
+        };
+
+        bool lanzaExcepcion = false;
+
+        try
+        {
+            pista.RevelarCartasAleatorias(cartas, 4);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            lanzaExcepcion = true;
+        }
+
+        Destroy(objeto);
+
+        Comprobar(lanzaExcepcion, "La Luna: no se pueden revelar más de 3 cartas");
     }
 
     private void Comprobar(bool condicion, string nombre)

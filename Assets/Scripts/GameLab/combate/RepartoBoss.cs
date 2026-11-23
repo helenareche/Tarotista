@@ -213,6 +213,34 @@ public class RepartoBoss : MonoBehaviour
 
     private void RevelarPista()
 {
+    // Habilidad de La Luna: se ven 2 cartas del boss en vez de 1
+    int cantidad =
+        HabilidadesJugador.CartasDePista(
+            HabilidadesJugador.Actuales()
+        );
+
+    if (cantidad > 1)
+    {
+        List<int> indices =
+            pistaBoss.RevelarCartasAleatorias(
+                cartasBoss,
+                cantidad
+            );
+
+        string mensajeLuna =
+            "La Luna te deja ver " + cantidad + " cartas del boss";
+
+        foreach (int i in indices)
+        {
+            visualesBoss[i].MostrarCara();
+            mensajeLuna +=
+                "\n" + NombrePosicion(i) + ": " + cartasBoss[i];
+        }
+
+        MostrarMensaje(mensajeLuna);
+        return;
+    }
+
     pistaBoss.RevelarCartaAleatoria(
         cartasBoss
     );

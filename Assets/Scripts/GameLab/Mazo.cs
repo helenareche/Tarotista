@@ -12,6 +12,10 @@ public class Mazo : MonoBehaviour
 
     void Start()
     {
+        // Habilidad de La Luna: la mano pasa a ser de 4 cartas
+        if (HabilidadesJugador.Tiene(HabilidadesJugador.Actuales(), HabilidadesJugador.LaLuna))
+            tamMano = HabilidadesJugador.ManoConLaLuna;
+
         foreach (Palo palo in System.Enum.GetValues(typeof(Palo)))
             for (int valor = 1; valor <= 14; valor++)
                 cartas.Add(new Carta(palo, valor));
