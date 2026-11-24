@@ -17,4 +17,5 @@ MonoBehaviour:
   voluntad: 12
   esFinal: 0
   regla: 1
+  habilidadOtorgada: Pacto
   imagen: {fileID: 0}

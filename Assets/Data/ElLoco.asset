@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: ElLoco
   m_EditorClassIdentifier: Assembly-CSharp::BossData
   nombre: El Loco
-  descripcionRegla: 'El ciclo de Afinidades puede invertirse al azar cada ronda (lo ves al revelar).'
+  descripcionRegla: El ciclo de Afinidades puede invertirse al azar cada ronda (lo ves al revelar).
   voluntad: 12
   esFinal: 0
   regla: 5
+  habilidadOtorgada: "Comod\xEDn"
   imagen: {fileID: 0}

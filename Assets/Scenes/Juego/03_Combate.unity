@@ -3782,7 +3782,7 @@ MonoBehaviour:
   escenaResultado: 04_Resultado
   voluntadPrueba: 12
   voluntadFinal: 30
-  probabilidadInvertirCiclo: 0.5
+  probabilidadInvertirCiclo: 0.75
 --- !u!4 &1789881261
 Transform:
   m_ObjectHideFlags: 0

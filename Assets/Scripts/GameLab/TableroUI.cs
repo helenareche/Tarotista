@@ -1,3 +1,4 @@
+
 using UnityEngine;
 
 public class TableroUI : MonoBehaviour
@@ -5,27 +6,32 @@ public class TableroUI : MonoBehaviour
     public static TableroUI Instancia { get; private set; }
 
     [SerializeField] private Mazo mazo;
-    [SerializeField] private SlotPosicion[] slots; // Pasado, Presente, Futuro, en ese orden
+    [SerializeField] private SlotPosicion[] slots;
 
     private CartaVisual seleccionada;
     private bool descarteUsado;
 
-    public bool DescarteUsado { get { return descarteUsado; } }
-    public Transform Mano { get { return mazo != null ? mazo.mano : null; } }
+    public bool DescarteUsado
+    {
+        get { return descarteUsado; }
+    }
+
+    public Transform Mano
+    {
+        get { return mazo != null ? mazo.mano : null; }
+    }
 
     private void Awake()
     {
         Instancia = this;
     }
 
-    // Lo llama CartaSeleccionable al hacer clic en una carta
     public void Seleccionar(CartaVisual carta)
     {
-        // Solo se pueden seleccionar cartas de la mano
-        if (carta == null || mazo == null || carta.transform.parent != mazo.mano)
+        if (carta == null || mazo == null ||
+            carta.transform.parent != mazo.mano)
             return;
 
-        // Clic en la ya seleccionada: se deselecciona
         if (seleccionada == carta)
         {
             Deseleccionar();
@@ -35,27 +41,32 @@ public class TableroUI : MonoBehaviour
         Deseleccionar();
         seleccionada = carta;
 
-        CartaSeleccionable sel = carta.GetComponent<CartaSeleccionable>();
-        if (sel != null) sel.SetElevada(true);
+        CartaSeleccionable sel =
+            carta.GetComponent<CartaSeleccionable>();
+
+        if (sel != null)
+            sel.SetElevada(true);
     }
 
     public void Deseleccionar()
     {
         if (seleccionada != null)
         {
-            CartaSeleccionable sel = seleccionada.GetComponent<CartaSeleccionable>();
-            if (sel != null) sel.SetElevada(false);
+            CartaSeleccionable sel =
+                seleccionada.GetComponent<CartaSeleccionable>();
+
+            if (sel != null)
+                sel.SetElevada(false);
         }
+
         seleccionada = null;
     }
 
     public void DescartarSeleccionada()
     {
-        // Solo se permite un descarte por ronda
         if (descarteUsado || seleccionada == null || mazo == null)
             return;
 
-        // No permitir descartar si ya hay cartas en la mesa
         foreach (SlotPosicion slot in slots)
         {
             if (slot.Ocupado)
@@ -65,19 +76,16 @@ public class TableroUI : MonoBehaviour
             }
         }
 
-        // Solo se puede descartar una carta de la mano
         if (seleccionada.transform.parent != mazo.mano)
             return;
 
-        // Solo se descarta la carta seleccionada
         CartaVisual carta = seleccionada;
-        seleccionada = null; // la carta se destruye, no hace falta bajarla
+        seleccionada = null;
         descarteUsado = true;
 
         mazo.Descartar(carta);
     }
 
-    // Devuelve una carta colocada a la mano
     public void DevolverCartaAMano(CartaArrastrable carta)
     {
         if (carta == null || mazo == null || mazo.mano == null)
@@ -86,7 +94,9 @@ public class TableroUI : MonoBehaviour
         if (!carta.PuedeArrastrarse)
             return;
 
-        SlotPosicion slot = carta.transform.parent.GetComponent<SlotPosicion>();
+        SlotPosicion slot =
+            carta.transform.parent.GetComponent<SlotPosicion>();
+
         if (slot == null)
             return;
 
@@ -119,10 +129,33 @@ public class TableroUI : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
-            jugadas[i] = slots[i].Ocupante != null ? slots[i].Ocupante.Carta : null;
+            jugadas[i] = slots[i].Ocupante != null
+                ? slots[i].Ocupante.Carta
+                : null;
         }
 
         return jugadas;
+    }
+
+    // Resuelve qué hacer con la carta de una posición.
+    // Si destruir es false, se descartará normalmente al limpiar la ronda.
+    public void ResolverCarta(int indice, bool destruir)
+    {
+        if (indice < 0 || indice >= slots.Length)
+            return;
+
+        SlotPosicion slot = slots[indice];
+
+        if (!slot.Ocupado)
+            return;
+
+        CartaVisual carta = slot.Ocupante;
+
+        if (destruir)
+        {
+            slot.Liberar();
+            mazo.Destruir(carta);
+        }
     }
 
     public void BloquearSlots(bool bloquear)
@@ -131,7 +164,9 @@ public class TableroUI : MonoBehaviour
         {
             if (slot.Ocupado)
             {
-                CartaArrastrable arr = slot.Ocupante.GetComponent<CartaArrastrable>();
+                CartaArrastrable arr =
+                    slot.Ocupante.GetComponent<CartaArrastrable>();
+
                 if (arr != null)
                     arr.PuedeArrastrarse = !bloquear;
             }
@@ -147,6 +182,7 @@ public class TableroUI : MonoBehaviour
             if (slot.Ocupado)
             {
                 CartaVisual carta = slot.Ocupante;
+
                 slot.Liberar();
                 mazo.DescartarSinRellenar(carta);
             }

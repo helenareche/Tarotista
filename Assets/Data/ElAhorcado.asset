@@ -17,4 +17,5 @@ MonoBehaviour:
   voluntad: 12
   esFinal: 0
   regla: 2
+  habilidadOtorgada: Perspectiva invertida
   imagen: {fileID: 0}

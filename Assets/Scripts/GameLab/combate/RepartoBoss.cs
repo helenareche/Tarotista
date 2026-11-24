@@ -1,8 +1,10 @@
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+
 public class RepartoBoss : MonoBehaviour
 {
     [Header("Información en pantalla")]
@@ -11,6 +13,8 @@ public class RepartoBoss : MonoBehaviour
     [SerializeField] private float segundosMensaje = 10f;
 
     private Coroutine ocultarMensajeCoroutine;
+    private Coroutine pistaCoroutine;
+
     [Header("Prefab utilizado también por el mazo")]
     [SerializeField] private CartaVisual prefabCarta;
 
@@ -22,108 +26,133 @@ public class RepartoBoss : MonoBehaviour
     [Header("Sistema de pista")]
     [SerializeField] private PistaBoss pistaBoss;
     [SerializeField] private float retrasoPista = 2f;
+
     [Header("Prueba temporal")]
     [SerializeField] private bool prepararAlEmpezar = true;
-    
 
-    private readonly List<Carta> cartasBoss =
-        new List<Carta>();
+    private readonly List<Carta> cartasBoss = new List<Carta>();
+    private readonly List<CartaVisual> visualesBoss = new List<CartaVisual>();
 
-    private readonly List<CartaVisual> visualesBoss =
-        new List<CartaVisual>();
+    private int indicePrimeraPista = -1;
+    private bool primeraPistaRevelada = false;
 
-    private void Start()
+    // Se conserva durante todas las rondas del mismo combate.
+    private bool segundaPistaUsada = false;
+
+    private HashSet<Carta> CartasDestruidas
     {
-        if (prepararAlEmpezar)
+        get
         {
-            PrepararRonda();
+            if (GameManager.Instance == null)
+                return null;
+
+            return GameManager.Instance.cartasDestruidasBoss;
         }
     }
 
     private void Awake()
-{
-    if (panelInfoBoss != null)
     {
-        panelInfoBoss.SetActive(false);
+        if (panelInfoBoss != null)
+            panelInfoBoss.SetActive(false);
     }
-}
+
+    private void Start()
+    {
+        if (prepararAlEmpezar)
+            PrepararRonda();
+    }
+
+    // Se llama una sola vez cuando comienza un combate nuevo.
+    public void ReiniciarOjoLunar()
+    {
+        segundaPistaUsada = false;
+    }
+
     public void PrepararRonda()
     {
         if (!ReferenciasAsignadas())
+            return;
+
+        LimpiarRonda();
+
+        indicePrimeraPista = -1;
+        primeraPistaRevelada = false;
+
+        // IMPORTANTE:
+        // No reiniciamos segundaPistaUsada aquí.
+        // Así Ojo Lunar solo puede utilizarse una vez por combate.
+
+        if (!GenerarTresCartas())
         {
+            Debug.LogError("No quedan suficientes cartas disponibles para el boss.");
             return;
         }
 
-        LimpiarRonda();
-        GenerarTresCartas();
         CrearVisualesBocaAbajo();
 
         if (visualesBoss.Count != 3)
         {
-            Debug.LogError(
-                "No se han podido crear las tres cartas del boss."
+            Debug.LogError("No se han podido crear las tres cartas del boss.");
+            return;
+        }
+
+        BossData bossActual = GameManager.Instance != null
+            ? GameManager.Instance.bossActual
+            : null;
+
+        // La regla de La Luna oculta todas las pistas.
+        if (bossActual != null &&
+            bossActual.regla == ReglaBoss.OcultaPista)
+        {
+            MostrarMensaje(
+                bossActual.nombre +
+                " oculta sus cartas.\n" +
+                "Esta ronda no tendrás ninguna pista."
             );
 
             return;
         }
 
-        BossData bossActual = null;
-
-        if (GameManager.Instance != null)
-        {
-            bossActual =
-                GameManager.Instance.bossActual;
-        }
-
-        if (bossActual != null &&
-    bossActual.regla == ReglaBoss.OcultaPista)
-{
-    MostrarMensaje(
-        bossActual.nombre +
-        " oculta sus cartas.\n" +
-        "Esta ronda no tendrás ninguna pista."
-    );
-
-    return;
-}
-
-      StartCoroutine(RevelarPistaConRetraso());
+        pistaCoroutine = StartCoroutine(RevelarPistaConRetraso());
     }
+
     private IEnumerator RevelarPistaConRetraso()
     {
-    yield return new WaitForSeconds(retrasoPista);
-    RevelarPista();
-    }
-    private void GenerarTresCartas()
-    {
-        List<Carta> mazoTemporal =
-            new List<Carta>();
+        yield return new WaitForSeconds(retrasoPista);
 
-        foreach (
-            Palo palo in Enum.GetValues(typeof(Palo)))
+        RevelarPista();
+
+        pistaCoroutine = null;
+    }
+
+    private bool GenerarTresCartas()
+    {
+        List<Carta> mazoTemporal = new List<Carta>();
+        HashSet<Carta> destruidas = CartasDestruidas;
+
+        foreach (Palo palo in Enum.GetValues(typeof(Palo)))
         {
             for (int valor = 1; valor <= 14; valor++)
             {
-                mazoTemporal.Add(
-                    new Carta(palo, valor)
-                );
+                Carta carta = new Carta(palo, valor);
+
+                if (destruidas == null || !destruidas.Contains(carta))
+                    mazoTemporal.Add(carta);
             }
         }
 
+        if (mazoTemporal.Count < 3)
+            return false;
+
         for (int i = 0; i < 3; i++)
         {
-            int indice =
-                UnityEngine.Random.Range(
-                    0,
-                    mazoTemporal.Count
-                );
+            int indice = UnityEngine.Random.Range(0, mazoTemporal.Count);
 
-            cartasBoss.Add(
-                mazoTemporal[indice]
-            );
-
+            cartasBoss.Add(mazoTemporal[indice]);
             mazoTemporal.RemoveAt(indice);
         }
+
+        return true;
     }
 
     private void CrearVisualesBocaAbajo()
@@ -137,53 +166,40 @@ public class RepartoBoss : MonoBehaviour
 
         for (int i = 0; i < 3; i++)
         {
-            CartaVisual visual =
-                Instantiate(
-                    prefabCarta,
-                    slots[i]
-                );
+            CartaVisual visual = Instantiate(prefabCarta, slots[i]);
 
-            RectTransform rect =
-                visual.GetComponent<RectTransform>();
+            RectTransform rect = visual.GetComponent<RectTransform>();
 
             if (rect != null)
             {
-                rect.anchorMin =
-                    new Vector2(0.5f, 0.5f);
-
-                rect.anchorMax =
-                    new Vector2(0.5f, 0.5f);
-
-                rect.pivot =
-                    new Vector2(0.5f, 0.5f);
-
-                rect.anchoredPosition =
-                    Vector2.zero;
-
-                rect.localRotation =
-                    Quaternion.identity;
-
-                rect.localScale =
-                    Vector3.one;
+                rect.anchorMin = new Vector2(0.5f, 0.5f);
+                rect.anchorMax = new Vector2(0.5f, 0.5f);
+                rect.pivot = new Vector2(0.5f, 0.5f);
+                rect.anchoredPosition = Vector2.zero;
+                rect.localRotation = Quaternion.identity;
+                rect.localScale = Vector3.one;
             }
 
-            visual.Configurar(
-                cartasBoss[i],
-                false
-            );
+            visual.Configurar(cartasBoss[i], false);
 
-            DesactivarInteraccion(
-                visual
-            );
+            DesactivarInteraccion(visual);
 
-            visualesBoss.Add(
-                visual
-            );
+            CartaPistaSeleccionable seleccionable =
+                visual.GetComponent<CartaPistaSeleccionable>();
+
+            if (seleccionable == null)
+            {
+                seleccionable =
+                    visual.gameObject.AddComponent<CartaPistaSeleccionable>();
+            }
+
+            seleccionable.Configurar(this, i);
+
+            visualesBoss.Add(visual);
         }
     }
 
-    private void DesactivarInteraccion(
-        CartaVisual visual)
+    private void DesactivarInteraccion(CartaVisual visual)
     {
         CartaArrastrable arrastrable =
             visual.GetComponent<CartaArrastrable>();
@@ -198,83 +214,116 @@ public class RepartoBoss : MonoBehaviour
             visual.GetComponent<CartaSeleccionable>();
 
         if (seleccionable != null)
-        {
             seleccionable.enabled = false;
-        }
 
-        CanvasGroup grupo =
-            visual.GetComponent<CanvasGroup>();
+        CanvasGroup grupo = visual.GetComponent<CanvasGroup>();
 
         if (grupo != null)
         {
-            grupo.blocksRaycasts = false;
+            grupo.blocksRaycasts = true;
+            grupo.interactable = true;
         }
     }
 
     private void RevelarPista()
-{
-    // Habilidad de La Luna: se ven 2 cartas del boss en vez de 1
-    int cantidad =
-        HabilidadesJugador.CartasDePista(
-            HabilidadesJugador.Actuales()
+    {
+        if (cartasBoss.Count != 3 || visualesBoss.Count != 3)
+            return;
+
+        pistaBoss.RevelarCartaAleatoria(cartasBoss);
+
+        indicePrimeraPista = pistaBoss.IndiceRevelado;
+
+        if (indicePrimeraPista < 0 ||
+            indicePrimeraPista >= visualesBoss.Count)
+            return;
+
+        visualesBoss[indicePrimeraPista].MostrarCara();
+
+        primeraPistaRevelada = true;
+
+        bool tieneOjoLunar = HabilidadesJugador.Tiene(
+            HabilidadesJugador.Actuales(),
+            HabilidadesJugador.OjoLunar
         );
 
-    if (cantidad > 1)
-    {
-        List<int> indices =
-            pistaBoss.RevelarCartasAleatorias(
-                cartasBoss,
-                cantidad
-            );
+        string mensaje =
+            "El boss revela una pista\n" +
+            NombrePosicion(indicePrimeraPista) + ": " +
+            cartasBoss[indicePrimeraPista];
 
-        string mensajeLuna =
-            "La Luna te deja ver " + cantidad + " cartas del boss";
-
-        foreach (int i in indices)
+        if (tieneOjoLunar && !segundaPistaUsada)
         {
-            visualesBoss[i].MostrarCara();
-            mensajeLuna +=
-                "\n" + NombrePosicion(i) + ": " + cartasBoss[i];
+            mensaje +=
+                "\n\n¡Ojo Lunar! Selecciona otra carta del boss " +
+                "para revelar una segunda pista.";
+        }
+        else if (tieneOjoLunar && segundaPistaUsada)
+        {
+            mensaje += "\n\nYa has utilizado Ojo Lunar en este combate.";
         }
 
-        MostrarMensaje(mensajeLuna);
-        return;
+        MostrarMensaje(mensaje);
     }
 
-    pistaBoss.RevelarCartaAleatoria(
-        cartasBoss
-    );
-
-    int indice =
-        pistaBoss.IndiceRevelado;
-
-    visualesBoss[indice].MostrarCara();
-
-    string mensaje =
-        "El boss revela una pista\n" +
-        NombrePosicion(indice) +
-        ": " +
-        cartasBoss[indice];
-
-    MostrarMensaje(mensaje);
-}
-    private string NombrePosicion(int indice)
-{
-    switch (indice)
+    public void SeleccionarSegundaPista(int indice)
     {
-        case 0:
-            return "Pasado";
+        if (!primeraPistaRevelada)
+            return;
 
-        case 1:
-            return "Presente";
+        if (segundaPistaUsada)
+            return;
 
-        case 2:
-            return "Futuro";
+        if (indice < 0 || indice >= visualesBoss.Count)
+            return;
 
-        default:
-            return "Posición desconocida";
+        if (indice == indicePrimeraPista)
+            return;
+
+        if (visualesBoss[indice] == null)
+            return;
+
+        bool tieneOjoLunar = HabilidadesJugador.Tiene(
+            HabilidadesJugador.Actuales(),
+            HabilidadesJugador.OjoLunar
+        );
+
+        if (!tieneOjoLunar)
+            return;
+
+        BossData bossActual = GameManager.Instance != null
+            ? GameManager.Instance.bossActual
+            : null;
+
+        // La regla de La Luna tiene prioridad.
+        if (bossActual != null &&
+            bossActual.regla == ReglaBoss.OcultaPista)
+            return;
+
+        // Se marca como usada para el resto del combate.
+        segundaPistaUsada = true;
+
+        visualesBoss[indice].MostrarCara();
+
+        MostrarMensaje(
+            "¡Ojo Lunar!\n" +
+            "Segunda pista revelada.\n" +
+            NombrePosicion(indice) + ": " +
+            cartasBoss[indice]
+        );
     }
-}
+
+    private string NombrePosicion(int indice)
+    {
+        switch (indice)
+        {
+            case 0: return "Pasado";
+            case 1: return "Presente";
+            case 2: return "Futuro";
+            default: return "Posición desconocida";
+        }
+    }
+
     public Carta[] ObtenerCartas()
     {
         return cartasBoss.ToArray();
@@ -282,46 +331,74 @@ public class RepartoBoss : MonoBehaviour
 
     public void RevelarTodas()
     {
-        foreach (
-            CartaVisual visual in visualesBoss)
+        foreach (CartaVisual visual in visualesBoss)
         {
             if (visual != null)
-            {
                 visual.MostrarCara();
-            }
+        }
+    }
+
+    public void DestruirCarta(int indice)
+    {
+        if (indice < 0 || indice >= cartasBoss.Count)
+            return;
+
+        Carta carta = cartasBoss[indice];
+
+        if (carta != null)
+        {
+            HashSet<Carta> destruidas = CartasDestruidas;
+
+            if (destruidas != null)
+                destruidas.Add(carta);
+            else
+                Debug.LogWarning(
+                    "RepartoBoss: no se ha podido registrar la carta destruida en GameManager."
+                );
+        }
+
+        if (indice < visualesBoss.Count)
+        {
+            CartaVisual visual = visualesBoss[indice];
+
+            if (visual != null)
+                Destroy(visual.gameObject);
+
+            visualesBoss[indice] = null;
         }
     }
 
     public void LimpiarRonda()
     {
-        foreach (
-            CartaVisual visual in visualesBoss)
+        if (pistaCoroutine != null)
+        {
+            StopCoroutine(pistaCoroutine);
+            pistaCoroutine = null;
+        }
+
+        foreach (CartaVisual visual in visualesBoss)
         {
             if (visual != null)
-            {
-                Destroy(
-                    visual.gameObject
-                );
-            }
+                Destroy(visual.gameObject);
         }
 
         visualesBoss.Clear();
         cartasBoss.Clear();
 
+        indicePrimeraPista = -1;
+        primeraPistaRevelada = false;
+
+        // No reiniciamos segundaPistaUsada aquí.
+
         if (pistaBoss != null)
-        {
             pistaBoss.OcultarPista();
-        }
     }
 
     private bool ReferenciasAsignadas()
     {
         if (prefabCarta == null)
         {
-            Debug.LogError(
-                "RepartoBoss: falta Prefab Carta."
-            );
-
+            Debug.LogError("RepartoBoss: falta Prefab Carta.");
             return false;
         }
 
@@ -329,63 +406,48 @@ public class RepartoBoss : MonoBehaviour
             slotPresente == null ||
             slotFuturo == null)
         {
-            Debug.LogError(
-                "RepartoBoss: faltan slots del boss."
-            );
-
+            Debug.LogError("RepartoBoss: faltan slots del boss.");
             return false;
         }
 
         if (pistaBoss == null)
         {
-            Debug.LogError(
-                "RepartoBoss: falta PistaBoss."
-            );
-
+            Debug.LogError("RepartoBoss: falta PistaBoss.");
             return false;
         }
 
         return true;
     }
-   public void MostrarMensaje(string mensaje)
-{
-    Debug.Log(mensaje);
 
-    if (textoInfoBoss == null)
+    public void MostrarMensaje(string mensaje)
     {
-        Debug.LogWarning(
-            "RepartoBoss: no se ha asignado Texto Info Boss."
-        );
+        Debug.Log(mensaje);
 
-        return;
+        if (textoInfoBoss == null)
+        {
+            Debug.LogWarning("RepartoBoss: falta Texto Info Boss.");
+            return;
+        }
+
+        if (panelInfoBoss != null)
+            panelInfoBoss.SetActive(true);
+
+        textoInfoBoss.text = mensaje;
+
+        if (ocultarMensajeCoroutine != null)
+            StopCoroutine(ocultarMensajeCoroutine);
+
+        ocultarMensajeCoroutine =
+            StartCoroutine(OcultarMensajeTrasEspera());
     }
 
-    if (panelInfoBoss != null)
+    private IEnumerator OcultarMensajeTrasEspera()
     {
-        panelInfoBoss.SetActive(true);
+        yield return new WaitForSeconds(segundosMensaje);
+
+        if (panelInfoBoss != null)
+            panelInfoBoss.SetActive(false);
+
+        ocultarMensajeCoroutine = null;
     }
-
-    textoInfoBoss.text = mensaje;
-
-    if (ocultarMensajeCoroutine != null)
-    {
-        StopCoroutine(ocultarMensajeCoroutine);
-    }
-
-    ocultarMensajeCoroutine =
-        StartCoroutine(OcultarMensajeTrasEspera());
-}
-
-private IEnumerator OcultarMensajeTrasEspera()
-{
-    yield return new WaitForSeconds(segundosMensaje);
-
-    if (panelInfoBoss != null)
-    {
-        panelInfoBoss.SetActive(false);
-    }
-
-    ocultarMensajeCoroutine = null;
-}
-
 }

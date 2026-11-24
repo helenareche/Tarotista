@@ -52,10 +52,12 @@ public class CombateManager : MonoBehaviour
         new PosicionCombate(TipoPosicion.Futuro)
     };
 
+    private bool derrumbeActivado;
     private bool resolviendo;
     private bool combateTerminado;
     private bool esFinal;
     private bool aceptarVictoria;
+
     private ReglaBoss reglaBoss = ReglaBoss.Ninguna;
 
     private void Start()
@@ -66,6 +68,12 @@ public class CombateManager : MonoBehaviour
 
         if (gm.bossActual != null)
             reglaBoss = gm.bossActual.regla;
+
+        // Ojo Lunar se reinicia una sola vez al comenzar este combate.
+        if (repartoBoss != null)
+        {
+            repartoBoss.ReiniciarOjoLunar();
+        }
 
         vidaJugador.Inicializar(gm.alientoMaximo, gm.aliento);
         vidaBoss.Inicializar(esFinal ? voluntadFinal : voluntadPrueba);
@@ -152,25 +160,81 @@ public class CombateManager : MonoBehaviour
             yield return new WaitForSeconds(pausaRevelado);
         }
 
+        ResultadoPosicion[] resultados = new ResultadoPosicion[3];
+
+        bool hayVictoriaJugador = false;
+        int danioTotalBoss = 0;
+
         for (int i = 0; i < 3; i++)
         {
-            ResultadoPosicion r = posiciones[i].Resolver(
+            resultados[i] = posiciones[i].Resolver(
                 jugador[i],
                 boss[i],
                 reglaBoss,
                 cicloInvertido
             );
 
-            MostrarResultado(posiciones[i].Tipo, jugador[i], boss[i], r);
+            if (resultados[i].Ganador == GanadorPosicion.Jugador)
+                hayVictoriaJugador = true;
+
+            danioTotalBoss += resultados[i].DanioAlBoss;
+        }
+
+        bool tieneDerrumbe = HabilidadesJugador.Tiene(
+            HabilidadesJugador.Actuales(),
+            HabilidadesJugador.Derrumbe
+        );
+
+        bool activarDerrumbe =
+            tieneDerrumbe &&
+            !derrumbeActivado &&
+            hayVictoriaJugador;
+
+        if (activarDerrumbe)
+        {
+            derrumbeActivado = true;
+
+            if (textoResultado != null)
+                textoResultado.text +=
+                    "¡DERRUMBE! ¡El daño de esta tirada se duplica!\n";
+        }
+
+        bool esLaTorre = reglaBoss == ReglaBoss.DestruyeGanadoras;
+
+        for (int i = 0; i < 3; i++)
+        {
+            ResultadoPosicion r = resultados[i];
+
+            MostrarResultado(
+                posiciones[i].Tipo,
+                jugador[i],
+                boss[i],
+                r
+            );
+
+            bool jugadorGana = r.Ganador == GanadorPosicion.Jugador;
+            bool bossGana = r.Ganador == GanadorPosicion.Boss;
+
+            if (jugadorGana && (esLaTorre || activarDerrumbe))
+                tablero.ResolverCarta(i, true);
+
+            if (bossGana && esLaTorre)
+                repartoBoss.DestruirCarta(i);
 
             vidaJugador.RecibirDanio(r.DanioAlJugador);
-            vidaBoss.RecibirDanio(r.DanioAlBoss);
 
             if (combateTerminado)
                 yield break;
 
             yield return new WaitForSeconds(pausaEntrePosiciones);
         }
+
+        int multiplicador = activarDerrumbe ? 2 : 1;
+
+        vidaBoss.RecibirDanio(danioTotalBoss * multiplicador);
+
+        if (combateTerminado)
+            yield break;
 
         yield return new WaitForSeconds(pausaFinRonda);
 
@@ -204,8 +268,9 @@ public class CombateManager : MonoBehaviour
                 break;
         }
 
-        string msg = pos + ": " + cj + " (" + r.PoderJugador + ") vs " +
-                     cb + " (" + r.PoderBoss + ") → " + quien;
+        string msg =
+            pos + ": " + cj + " (" + r.PoderJugador + ") vs " +
+            cb + " (" + r.PoderBoss + ") → " + quien;
 
         Debug.Log(msg);
 
@@ -239,20 +304,17 @@ public class CombateManager : MonoBehaviour
     {
         GameManager gm = GameManager.Instance;
 
-        // Si es el combate final, se mantiene el comportamiento anterior.
         if (esFinal)
         {
             textoResultado.text += "\n¡Has desafiado al destino!";
 
             yield return new WaitForSeconds(pausaFinCombate);
 
-            gm.NuevaPartida();
             SceneManager.LoadScene(escenaMenu);
 
             yield break;
         }
 
-        // Curación por ganar la prueba.
         int curacion = gm.alientoMaximo / 2;
 
         gm.aliento = Mathf.Min(
@@ -263,14 +325,15 @@ public class CombateManager : MonoBehaviour
         gm.pruebaResuelta[gm.indiceActual] = true;
         gm.pruebaSaltada[gm.indiceActual] = false;
 
-        // Registrar la habilidad del jefe derrotado.
-        string nombreHabilidad = gm.bossActual.nombre;
+        string nombreHabilidad = gm.bossActual.habilidadOtorgada;
         string descripcionHabilidad = gm.bossActual.descripcionRegla;
 
-        if (!gm.habilidades.Contains(nombreHabilidad))
+        if (!string.IsNullOrEmpty(nombreHabilidad) &&
+            !gm.habilidades.Contains(nombreHabilidad))
+        {
             gm.habilidades.Add(nombreHabilidad);
+        }
 
-        // Preparar los textos de la ventana.
         if (textoTituloVictoria != null)
             textoTituloVictoria.text = "¡Ronda superada!";
 
@@ -282,12 +345,12 @@ public class CombateManager : MonoBehaviour
         }
 
         if (textoHabilidadVictoria != null)
-            textoHabilidadVictoria.text = "Habilidad conseguida: " + nombreHabilidad;
+            textoHabilidadVictoria.text =
+                "Habilidad conseguida: " + nombreHabilidad;
 
         if (textoDescripcionVictoria != null)
             textoDescripcionVictoria.text = descripcionHabilidad;
 
-        // Mostrar la ventana y esperar a que el jugador acepte.
         aceptarVictoria = false;
 
         if (panelVictoria != null)
@@ -322,7 +385,6 @@ public class CombateManager : MonoBehaviour
 
         yield return new WaitForSeconds(pausaFinCombate);
 
-        GameManager.Instance.NuevaPartida();
         SceneManager.LoadScene(escenaResultado);
     }
 }

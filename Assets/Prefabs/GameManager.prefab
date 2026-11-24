@@ -49,6 +49,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7efc6e3d6f0f65844a1131ab52b82619, type: 2}
   - {fileID: 11400000, guid: 7d768fe6ecb73814f964c25f27b46f16, type: 2}
   - {fileID: 11400000, guid: 95721c1ca9dc493a877a5509ae1e6eeb, type: 2}
+  - {fileID: 11400000, guid: 83d5805062139a84581fe35270c04430, type: 2}
+  - {fileID: 11400000, guid: 441fa197baaa7c148a314d9730cf1aae, type: 2}
   bossesFinales:
   - {fileID: 11400000, guid: 132bf515b1b8c8a4c863f24905b6a4e0, type: 2}
   aliento: 10
@@ -59,6 +61,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   pruebaResuelta: 000000y
+  pruebaSaltada: 000000y
   bossFinal: {fileID: 0}
   bossActual: {fileID: 0}
   indiceActual: -1

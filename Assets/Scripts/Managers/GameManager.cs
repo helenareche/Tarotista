@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,10 @@ public class GameManager : MonoBehaviour
     [Header("Bosses disponibles (arrastrar assets)")]
     public List<BossData> bossesPrueba;
     public List<BossData> bossesFinales;
+
+    [Header("Cartas destruidas durante la partida")]
+    public HashSet<Carta> cartasDestruidasJugador = new HashSet<Carta>();
+    public HashSet<Carta> cartasDestruidasBoss = new HashSet<Carta>();
 
     [Header("Estado del jugador")]
     public int aliento = 10;
@@ -23,9 +28,14 @@ public class GameManager : MonoBehaviour
     public int indiceActual = -1; // 0-2 = prueba, 3 = final
     public bool victoriaFinal;
 
-    void Awake()
+    private void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -34,25 +44,47 @@ public class GameManager : MonoBehaviour
     {
         alientoMaximo = 10;
         aliento = 10;
+
         habilidades.Clear();
+
         pruebaResuelta = new bool[3];
         pruebaSaltada = new bool[3];
+
         indiceActual = -1;
         bossActual = null;
         victoriaFinal = false;
 
+        // Reiniciar las cartas destruidas de la partida anterior.
+        cartasDestruidasJugador.Clear();
+        cartasDestruidasBoss.Clear();
+
         var pool = new List<BossData>(bossesPrueba);
+
         for (int i = 0; i < 3 && pool.Count > 0; i++)
         {
             int r = Random.Range(0, pool.Count);
             pruebas[i] = pool[r];
             pool.RemoveAt(r);
         }
-        bossFinal = bossesFinales[Random.Range(0, bossesFinales.Count)];
+
+        if (bossesFinales != null && bossesFinales.Count > 0)
+        {
+            bossFinal = bossesFinales[
+                Random.Range(0, bossesFinales.Count)
+            ];
+        }
+        else
+        {
+            bossFinal = null;
+            Debug.LogError("GameManager: no hay bosses finales asignados.");
+        }
     }
 
     public void SaltarPrueba(int i)
     {
+        if (i < 0 || i >= pruebaResuelta.Length)
+            return;
+
         aliento = Mathf.Min(aliento + 3, alientoMaximo);
         pruebaResuelta[i] = true;
         pruebaSaltada[i] = true;
@@ -60,15 +92,35 @@ public class GameManager : MonoBehaviour
 
     public void GanarPrueba(int i)
     {
-        aliento = Mathf.Min(aliento + alientoMaximo / 2, alientoMaximo);
+        if (i < 0 || i >= pruebas.Length || pruebas[i] == null)
+            return;
+
+        aliento = Mathf.Min(
+            aliento + alientoMaximo / 2,
+            alientoMaximo
+        );
+
         pruebaResuelta[i] = true;
         pruebaSaltada[i] = false;
-        habilidades.Add(pruebas[i].nombre); // placeholder de habilidad
+
+        // Conceder la habilidad configurada en el BossData.
+        string habilidad = pruebas[i].habilidadOtorgada;
+
+        if (!string.IsNullOrEmpty(habilidad) &&
+            !habilidades.Contains(habilidad))
+        {
+            habilidades.Add(habilidad);
+        }
     }
 
     public bool TodasLasPruebasResueltas()
     {
-        foreach (var r in pruebaResuelta) if (!r) return false;
+        foreach (var resuelta in pruebaResuelta)
+        {
+            if (!resuelta)
+                return false;
+        }
+
         return true;
     }
 }
