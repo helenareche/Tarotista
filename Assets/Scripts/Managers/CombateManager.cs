@@ -18,6 +18,29 @@ public class CombateManager : MonoBehaviour
     [SerializeField] private TMP_Text textoResultado;
     [SerializeField] private TMP_Text textoVidas;
 
+    [Header("Informacion del Boss")]
+    [SerializeField] private TMP_Text textoNombreBoss;
+    [SerializeField] private TMP_Text textoDescripcionBoss;
+
+    [Header("Marcador de enfrentamiento")]
+    [SerializeField] private GameObject panelEnfrentamiento;
+    [SerializeField] private RectTransform marcadorJugador;
+    [SerializeField] private RectTransform marcadorBoss;
+    [SerializeField] private TMP_Text textoPoderJugador;
+    [SerializeField] private TMP_Text textoPoderBoss;
+
+    [Header("Animacion de cartas y marcadores")]
+    [SerializeField] private float elevacionCartas = 25f;
+    [SerializeField] private float expansionMarcadores = 1.12f;
+    [SerializeField] private float duracionMovimiento = 0.4f;
+
+    [Header("Tiempos de enfrentamiento")]
+    [SerializeField] private float pausaCartaJugador = 1f;
+    [SerializeField] private float pausaCartaBoss = 1f;
+    [SerializeField] private float pausaEvaluacion = 1f;
+    [SerializeField] private float pausaMostrarResultado = 1.2f;
+    [SerializeField] private float pausaMostrarDanio = 1.2f;
+
     [Header("UI de victoria")]
     [SerializeField] private GameObject panelVictoria;
     [SerializeField] private TMP_Text textoTituloVictoria;
@@ -26,9 +49,9 @@ public class CombateManager : MonoBehaviour
     [SerializeField] private TMP_Text textoDescripcionVictoria;
     [SerializeField] private Button botonAceptarVictoria;
 
-    [Header("Tiempos")]
+    [Header("Tiempos generales")]
     [SerializeField] private float pausaRevelado = 1f;
-    [SerializeField] private float pausaEntrePosiciones = 1.5f;
+    [SerializeField] private float pausaEntrePosiciones = 0.5f;
     [SerializeField] private float pausaFinRonda = 2f;
     [SerializeField] private float pausaFinCombate = 2.5f;
 
@@ -60,20 +83,70 @@ public class CombateManager : MonoBehaviour
 
     private ReglaBoss reglaBoss = ReglaBoss.Ninguna;
 
+    private Vector3 escalaOriginalJugador;
+    private Vector3 escalaOriginalBoss;
+
+    private Vector2 posicionOriginalMarcadorJugador;
+    private Vector2 posicionOriginalMarcadorBoss;
+
     private void Start()
     {
         GameManager gm = GameManager.Instance;
 
         esFinal = gm.indiceActual == 3;
 
+        // Cargamos la información del boss seleccionado.
         if (gm.bossActual != null)
+        {
             reglaBoss = gm.bossActual.regla;
 
-        // Ojo Lunar se reinicia una sola vez al comenzar este combate.
-        if (repartoBoss != null)
-        {
-            repartoBoss.ReiniciarOjoLunar();
+            if (textoNombreBoss != null)
+                textoNombreBoss.text = gm.bossActual.nombre;
+
+            if (textoDescripcionBoss != null)
+                textoDescripcionBoss.text = gm.bossActual.descripcionRegla;
         }
+        else
+        {
+            Debug.LogWarning(
+                "No hay ningún BossData asignado en GameManager."
+            );
+
+            if (textoNombreBoss != null)
+                textoNombreBoss.text = "Boss desconocido";
+
+            if (textoDescripcionBoss != null)
+                textoDescripcionBoss.text = "";
+        }
+
+        // Reiniciamos Ojo Lunar al comenzar este combate.
+        if (repartoBoss != null)
+            repartoBoss.ReiniciarOjoLunar();
+
+        // Guardamos las posiciones y escalas originales.
+        if (marcadorJugador != null)
+        {
+            escalaOriginalJugador = marcadorJugador.localScale;
+            posicionOriginalMarcadorJugador =
+                marcadorJugador.anchoredPosition;
+        }
+
+        if (marcadorBoss != null)
+        {
+            escalaOriginalBoss = marcadorBoss.localScale;
+            posicionOriginalMarcadorBoss =
+                marcadorBoss.anchoredPosition;
+        }
+
+        OcultarMarcador();
+        RestaurarEscalasMarcadores();
+        RestaurarPosicionesMarcadores();
+
+        if (textoPoderJugador != null)
+            textoPoderJugador.text = "";
+
+        if (textoPoderBoss != null)
+            textoPoderBoss.text = "";
 
         vidaJugador.Inicializar(gm.alientoMaximo, gm.aliento);
         vidaBoss.Inicializar(esFinal ? voluntadFinal : voluntadPrueba);
@@ -133,7 +206,20 @@ public class CombateManager : MonoBehaviour
         resolviendo = true;
         botonJugar.interactable = false;
         tablero.BloquearSlots(true);
-        textoResultado.text = "";
+
+        if (textoResultado != null)
+            textoResultado.text = "";
+
+        // Preparamos los marcadores para la nueva ronda.
+        OcultarMarcador();
+        RestaurarEscalasMarcadores();
+        RestaurarPosicionesMarcadores();
+
+        if (textoPoderJugador != null)
+            textoPoderJugador.text = "";
+
+        if (textoPoderBoss != null)
+            textoPoderBoss.text = "";
 
         Carta[] jugador = tablero.ObtenerJugadas();
         Carta[] boss = repartoBoss.ObtenerCartas();
@@ -163,8 +249,8 @@ public class CombateManager : MonoBehaviour
         ResultadoPosicion[] resultados = new ResultadoPosicion[3];
 
         bool hayVictoriaJugador = false;
-        int danioTotalBoss = 0;
 
+        // Calculamos los resultados de las tres posiciones.
         for (int i = 0; i < 3; i++)
         {
             resultados[i] = posiciones[i].Resolver(
@@ -176,8 +262,6 @@ public class CombateManager : MonoBehaviour
 
             if (resultados[i].Ganador == GanadorPosicion.Jugador)
                 hayVictoriaJugador = true;
-
-            danioTotalBoss += resultados[i].DanioAlBoss;
         }
 
         bool tieneDerrumbe = HabilidadesJugador.Tiene(
@@ -201,6 +285,13 @@ public class CombateManager : MonoBehaviour
 
         bool esLaTorre = reglaBoss == ReglaBoss.DestruyeGanadoras;
 
+        int multiplicador = activarDerrumbe ? 2 : 1;
+
+        // El panel permanece visible durante toda la resolución.
+        if (panelEnfrentamiento != null)
+            panelEnfrentamiento.SetActive(true);
+
+        // Resolvemos cada posición de forma individual.
         for (int i = 0; i < 3; i++)
         {
             ResultadoPosicion r = resultados[i];
@@ -215,34 +306,372 @@ public class CombateManager : MonoBehaviour
             bool jugadorGana = r.Ganador == GanadorPosicion.Jugador;
             bool bossGana = r.Ganador == GanadorPosicion.Boss;
 
+            int danioJugador = r.DanioAlJugador;
+            int danioBoss = r.DanioAlBoss * multiplicador;
+
+            yield return StartCoroutine(
+                MostrarEnfrentamiento(
+                    i,
+                    r,
+                    danioJugador,
+                    danioBoss
+                )
+            );
+
+            // Destrucción de cartas según las reglas.
             if (jugadorGana && (esLaTorre || activarDerrumbe))
                 tablero.ResolverCarta(i, true);
 
             if (bossGana && esLaTorre)
                 repartoBoss.DestruirCarta(i);
 
-            vidaJugador.RecibirDanio(r.DanioAlJugador);
+            // Aplicamos el daño al boss tras esta posición.
+            if (danioBoss > 0)
+            {
+                vidaBoss.RecibirDanio(danioBoss);
 
-            if (combateTerminado)
-                yield break;
+                if (combateTerminado)
+                    yield break;
+            }
+
+            // Aplicamos el daño al jugador.
+            if (danioJugador > 0)
+            {
+                vidaJugador.RecibirDanio(danioJugador);
+
+                if (combateTerminado)
+                    yield break;
+            }
 
             yield return new WaitForSeconds(pausaEntrePosiciones);
         }
 
-        int multiplicador = activarDerrumbe ? 2 : 1;
+        // Terminada la ronda, ocultamos y restauramos los marcadores.
+        OcultarMarcador();
+        RestaurarEscalasMarcadores();
+        RestaurarPosicionesMarcadores();
 
-        vidaBoss.RecibirDanio(danioTotalBoss * multiplicador);
+        if (textoPoderJugador != null)
+            textoPoderJugador.text = "";
 
-        if (combateTerminado)
-            yield break;
+        if (textoPoderBoss != null)
+            textoPoderBoss.text = "";
 
         yield return new WaitForSeconds(pausaFinRonda);
 
         tablero.LimpiarSlots();
         repartoBoss.PrepararRonda();
 
-        textoResultado.text = "";
+        if (textoResultado != null)
+            textoResultado.text = "";
+
         resolviendo = false;
+    }
+
+    private IEnumerator MostrarEnfrentamiento(
+        int indice,
+        ResultadoPosicion resultado,
+        int danioJugador,
+        int danioBoss)
+    {
+        CartaVisual cartaJugador = tablero.ObtenerVisualCarta(indice);
+        CartaVisual cartaBoss = repartoBoss.ObtenerVisualCarta(indice);
+
+        RectTransform rectJugador = cartaJugador != null
+            ? cartaJugador.GetComponent<RectTransform>()
+            : null;
+
+        RectTransform rectBoss = cartaBoss != null
+            ? cartaBoss.GetComponent<RectTransform>()
+            : null;
+
+        Vector2 posicionCartaJugador = rectJugador != null
+            ? rectJugador.anchoredPosition
+            : Vector2.zero;
+
+        Vector2 posicionCartaBoss = rectBoss != null
+            ? rectBoss.anchoredPosition
+            : Vector2.zero;
+
+        // Guardamos las posiciones originales de los marcadores.
+        Vector2 posicionMarcadorJugador =
+            posicionOriginalMarcadorJugador;
+
+        Vector2 posicionMarcadorBoss =
+            posicionOriginalMarcadorBoss;
+
+        // Limpiamos los textos anteriores.
+        if (textoPoderJugador != null)
+            textoPoderJugador.text = "";
+
+        if (textoPoderBoss != null)
+            textoPoderBoss.text = "";
+
+        // 1. Se eleva la carta del jugador y su cuadrado.
+        if (rectJugador != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    rectJugador,
+                    posicionCartaJugador +
+                    Vector2.up * elevacionCartas
+                )
+            );
+        }
+
+        if (marcadorJugador != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    marcadorJugador,
+                    posicionMarcadorJugador +
+                    Vector2.up * elevacionCartas
+                )
+            );
+
+            yield return StartCoroutine(
+                AnimarEscala(
+                    marcadorJugador,
+                    escalaOriginalJugador * expansionMarcadores
+                )
+            );
+        }
+
+        if (textoPoderJugador != null)
+            textoPoderJugador.text =
+                resultado.PoderJugador.ToString();
+
+        yield return new WaitForSeconds(pausaCartaJugador);
+
+        // 2. Se eleva la carta del boss y su cuadrado.
+        if (rectBoss != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    rectBoss,
+                    posicionCartaBoss +
+                    Vector2.up * elevacionCartas
+                )
+            );
+        }
+
+        if (marcadorBoss != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    marcadorBoss,
+                    posicionMarcadorBoss +
+                    Vector2.up * elevacionCartas
+                )
+            );
+
+            yield return StartCoroutine(
+                AnimarEscala(
+                    marcadorBoss,
+                    escalaOriginalBoss * expansionMarcadores
+                )
+            );
+        }
+
+        if (textoPoderBoss != null)
+            textoPoderBoss.text =
+                resultado.PoderBoss.ToString();
+
+        yield return new WaitForSeconds(pausaCartaBoss);
+
+        // 3. Evaluamos quién gana.
+        if (textoResultado != null)
+        {
+            switch (resultado.Ganador)
+            {
+                case GanadorPosicion.Jugador:
+                    textoResultado.text +=
+                        "\n¡GANAS " + posiciones[indice].Tipo + "!";
+                    break;
+
+                case GanadorPosicion.Boss:
+                    textoResultado.text +=
+                        "\n¡EL BOSS GANA " + posiciones[indice].Tipo + "!";
+                    break;
+
+                default:
+                    textoResultado.text +=
+                        "\n¡EMPATE EN " + posiciones[indice].Tipo + "!";
+                    break;
+            }
+        }
+
+        yield return new WaitForSeconds(pausaEvaluacion);
+
+        // 4. Mostramos el daño.
+        if (textoPoderJugador != null)
+        {
+            textoPoderJugador.text = danioJugador > 0
+                ? "-" + danioJugador + "\n"
+                : "";
+        }
+
+        if (textoPoderBoss != null)
+        {
+            textoPoderBoss.text = danioBoss > 0
+                ? "-" + danioBoss + "\n"
+                : "";
+        }
+
+        yield return new WaitForSeconds(pausaMostrarDanio);
+
+        // 5. Bajamos las cartas y los marcadores.
+        if (rectJugador != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    rectJugador,
+                    posicionCartaJugador
+                )
+            );
+        }
+
+        if (marcadorJugador != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    marcadorJugador,
+                    posicionMarcadorJugador
+                )
+            );
+
+            yield return StartCoroutine(
+                AnimarEscala(
+                    marcadorJugador,
+                    escalaOriginalJugador
+                )
+            );
+        }
+
+        if (rectBoss != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    rectBoss,
+                    posicionCartaBoss
+                )
+            );
+        }
+
+        if (marcadorBoss != null)
+        {
+            yield return StartCoroutine(
+                MoverRectTransform(
+                    marcadorBoss,
+                    posicionMarcadorBoss
+                )
+            );
+
+            yield return StartCoroutine(
+                AnimarEscala(
+                    marcadorBoss,
+                    escalaOriginalBoss
+                )
+            );
+        }
+
+        yield return new WaitForSeconds(pausaMostrarResultado);
+    }
+
+    private IEnumerator MoverRectTransform(
+        RectTransform elemento,
+        Vector2 destino)
+    {
+        if (elemento == null)
+            yield break;
+
+        Vector2 origen = elemento.anchoredPosition;
+        float tiempo = 0f;
+
+        if (duracionMovimiento <= 0f)
+        {
+            elemento.anchoredPosition = destino;
+            yield break;
+        }
+
+        while (tiempo < duracionMovimiento)
+        {
+            tiempo += Time.deltaTime;
+
+            float t = Mathf.Clamp01(tiempo / duracionMovimiento);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            elemento.anchoredPosition = Vector2.Lerp(
+                origen,
+                destino,
+                t
+            );
+
+            yield return null;
+        }
+
+        elemento.anchoredPosition = destino;
+    }
+
+    private IEnumerator AnimarEscala(
+        RectTransform elemento,
+        Vector3 destino)
+    {
+        if (elemento == null)
+            yield break;
+
+        Vector3 origen = elemento.localScale;
+        float tiempo = 0f;
+
+        if (duracionMovimiento <= 0f)
+        {
+            elemento.localScale = destino;
+            yield break;
+        }
+
+        while (tiempo < duracionMovimiento)
+        {
+            tiempo += Time.deltaTime;
+
+            float t = Mathf.Clamp01(tiempo / duracionMovimiento);
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            elemento.localScale = Vector3.Lerp(
+                origen,
+                destino,
+                t
+            );
+
+            yield return null;
+        }
+
+        elemento.localScale = destino;
+    }
+
+    private void RestaurarEscalasMarcadores()
+    {
+        if (marcadorJugador != null)
+            marcadorJugador.localScale = escalaOriginalJugador;
+
+        if (marcadorBoss != null)
+            marcadorBoss.localScale = escalaOriginalBoss;
+    }
+
+    private void RestaurarPosicionesMarcadores()
+    {
+        if (marcadorJugador != null)
+            marcadorJugador.anchoredPosition =
+                posicionOriginalMarcadorJugador;
+
+        if (marcadorBoss != null)
+            marcadorBoss.anchoredPosition =
+                posicionOriginalMarcadorBoss;
+    }
+
+    private void OcultarMarcador()
+    {
+        if (panelEnfrentamiento != null)
+            panelEnfrentamiento.SetActive(false);
     }
 
     private void MostrarResultado(
@@ -284,8 +713,10 @@ public class CombateManager : MonoBehaviour
             return;
 
         textoVidas.text =
-            "Aliento: " + vidaJugador.Actual + "/" + vidaJugador.Maxima +
-            "\nVoluntad: " + vidaBoss.Actual + "/" + vidaBoss.Maxima;
+            "Aliento: " + vidaJugador.Actual + "/" +
+            vidaJugador.Maxima +
+            "\nVoluntad: " + vidaBoss.Actual + "/" +
+            vidaBoss.Maxima;
     }
 
     private void AlVictoriaJugador()
@@ -297,6 +728,11 @@ public class CombateManager : MonoBehaviour
         botonJugar.interactable = false;
 
         StopAllCoroutines();
+
+        OcultarMarcador();
+        RestaurarEscalasMarcadores();
+        RestaurarPosicionesMarcadores();
+
         StartCoroutine(FinVictoria());
     }
 
@@ -306,12 +742,13 @@ public class CombateManager : MonoBehaviour
 
         if (esFinal)
         {
-            textoResultado.text += "\n¡Has desafiado al destino!";
+            if (textoResultado != null)
+                textoResultado.text +=
+                    "\n¡Has desafiado al destino!";
 
             yield return new WaitForSeconds(pausaFinCombate);
 
             SceneManager.LoadScene(escenaMenu);
-
             yield break;
         }
 
@@ -340,7 +777,8 @@ public class CombateManager : MonoBehaviour
         if (textoVidaVictoria != null)
         {
             textoVidaVictoria.text =
-                "Aliento: " + gm.aliento + "/" + gm.alientoMaximo +
+                "Aliento: " + gm.aliento + "/" +
+                gm.alientoMaximo +
                 "\nHas recuperado " + curacion + " de Aliento";
         }
 
@@ -376,12 +814,19 @@ public class CombateManager : MonoBehaviour
         botonJugar.interactable = false;
 
         StopAllCoroutines();
+
+        OcultarMarcador();
+        RestaurarEscalasMarcadores();
+        RestaurarPosicionesMarcadores();
+
         StartCoroutine(FinDerrota());
     }
 
     private IEnumerator FinDerrota()
     {
-        textoResultado.text += "\nHas caído... el destino estaba escrito.";
+        if (textoResultado != null)
+            textoResultado.text +=
+                "\nHas caído... el destino estaba escrito.";
 
         yield return new WaitForSeconds(pausaFinCombate);
 

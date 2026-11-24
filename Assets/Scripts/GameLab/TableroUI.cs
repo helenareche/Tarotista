@@ -191,4 +191,16 @@ public class TableroUI : MonoBehaviour
         descarteUsado = false;
         mazo.RellenarMano();
     }
+
+    //Elevar la carta que está colocada en cada posición
+    public CartaVisual ObtenerVisualCarta(int indice)
+    {
+        if (slots == null || indice < 0 || indice >= slots.Length)
+            return null;
+
+        if (slots[indice] == null || !slots[indice].Ocupado)
+            return null;
+
+        return slots[indice].Ocupante;
+    }
 }

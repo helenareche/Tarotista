@@ -450,4 +450,13 @@ public class RepartoBoss : MonoBehaviour
 
         ocultarMensajeCoroutine = null;
     }
+
+    //Acceder a carta visual sin cambiar como funciona su reparto
+    public CartaVisual ObtenerVisualCarta(int indice)
+    {
+        if (indice < 0 || indice >= visualesBoss.Count)
+            return null;
+
+        return visualesBoss[indice];
+    }
 }
