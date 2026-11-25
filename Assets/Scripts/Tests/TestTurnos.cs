@@ -161,6 +161,8 @@ public class TestTurnnos : MonoBehaviour
         boss.esFinal = esFinal;
         boss.regla = regla;
         boss.voluntad = 12;
+        // Cada boss concede su propia habilidad (BossData.habilidadOtorgada)
+        boss.habilidadOtorgada = "Habilidad de " + nombre;
 
         bossesTemporales.Add(boss);
 
@@ -369,15 +371,15 @@ public class TestTurnnos : MonoBehaviour
     {
         PrepararNuevaPartida();
 
-        string nombreBoss =
-            gameManager.pruebas[0].nombre;
+        string habilidadBoss =
+            gameManager.pruebas[0].habilidadOtorgada;
 
         gameManager.GanarPrueba(0);
 
         Comprobar(
             gameManager.habilidades.Count == 1 &&
             gameManager.habilidades[0] ==
-                nombreBoss,
+                habilidadBoss,
             "Ganar una prueba añade la habilidad correspondiente"
         );
     }

@@ -664,23 +664,24 @@ public class TestCombate : MonoBehaviour
 
     private void TestLunaConHabilidad()
     {
-        List<string> habilidades = new List<string> { "El Ahorcado", "La Luna" };
+        // La habilidad que da La Luna se llama "Ojo Lunar"
+        List<string> habilidades = new List<string> { "Perspectiva invertida", HabilidadesJugador.OjoLunar };
 
         Comprobar(
             HabilidadesJugador.TamanoMano(habilidades) == 4 &&
             HabilidadesJugador.CartasDePista(habilidades) == 2,
-            "La Luna: con la habilidad, mano de 4 y 2 pistas"
+            "La Luna: con Ojo Lunar, mano de 4 y 2 pistas"
         );
     }
 
     private void TestLunaOtraHabilidadNoAfecta()
     {
-        List<string> habilidades = new List<string> { "El Diablo" };
+        List<string> habilidades = new List<string> { "Pacto", "La Luna" };
 
         Comprobar(
             HabilidadesJugador.TamanoMano(habilidades) == 5 &&
             HabilidadesJugador.CartasDePista(habilidades) == 1,
-            "La Luna: otras habilidades no cambian la mano ni las pistas"
+            "La Luna: otras habilidades (o el nombre del boss) no cambian la mano ni las pistas"
         );
     }
 
