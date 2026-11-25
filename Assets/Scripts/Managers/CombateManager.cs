@@ -287,6 +287,15 @@ public class CombateManager : MonoBehaviour
 
         int multiplicador = activarDerrumbe ? 2 : 1;
 
+        // Pacto (El Diablo): cada posición ganada hace +2 de daño.
+        int danioExtraPacto = HabilidadesJugador.DanioExtraPorVictoria(
+            HabilidadesJugador.Actuales()
+        );
+
+        if (danioExtraPacto > 0 && hayVictoriaJugador && textoResultado != null)
+            textoResultado.text +=
+                "¡PACTO! Tus victorias hacen +" + danioExtraPacto + " de daño\n";
+
         // El panel permanece visible durante toda la resolución.
         if (panelEnfrentamiento != null)
             panelEnfrentamiento.SetActive(true);
@@ -308,6 +317,9 @@ public class CombateManager : MonoBehaviour
 
             int danioJugador = r.DanioAlJugador;
             int danioBoss = r.DanioAlBoss * multiplicador;
+
+            if (jugadorGana)
+                danioBoss += danioExtraPacto;
 
             yield return StartCoroutine(
                 MostrarEnfrentamiento(
@@ -765,11 +777,10 @@ public class CombateManager : MonoBehaviour
         string nombreHabilidad = gm.bossActual.habilidadOtorgada;
         string descripcionHabilidad = gm.bossActual.descripcionRegla;
 
-        if (!string.IsNullOrEmpty(nombreHabilidad) &&
-            !gm.habilidades.Contains(nombreHabilidad))
-        {
-            gm.habilidades.Add(nombreHabilidad);
-        }
+        int maximoAntes = gm.alientoMaximo;
+
+        // Añade la habilidad y aplica su coste (Pacto baja el Aliento máximo).
+        gm.ConcederHabilidad(nombreHabilidad);
 
         if (textoTituloVictoria != null)
             textoTituloVictoria.text = "¡Ronda superada!";
@@ -780,6 +791,11 @@ public class CombateManager : MonoBehaviour
                 "Aliento: " + gm.aliento + "/" +
                 gm.alientoMaximo +
                 "\nHas recuperado " + curacion + " de Aliento";
+
+            if (gm.alientoMaximo < maximoAntes)
+                textoVidaVictoria.text +=
+                    "\nPacto: tu Aliento máximo baja de " +
+                    maximoAntes + " a " + gm.alientoMaximo;
         }
 
         if (textoHabilidadVictoria != null)

@@ -49,6 +49,8 @@ public class TestCombate : MonoBehaviour
         TestLunaOtraHabilidadNoAfecta();
         TestLunaRevelaDosCartasDistintas();
         TestLunaCantidadInvalida();
+        TestPactoDanioExtra();
+        TestPactoReduceAlientoMaximo();
 
         MostrarResultado();
     }
@@ -744,6 +746,28 @@ public class TestCombate : MonoBehaviour
         Destroy(objeto);
 
         Comprobar(lanzaExcepcion, "La Luna: no se pueden revelar más de 3 cartas");
+    }
+
+    // ---------- Habilidad de El Diablo: Pacto (051) ----------
+
+    private void TestPactoDanioExtra()
+    {
+        Comprobar(
+            HabilidadesJugador.DanioExtraPorVictoria(new List<string> { HabilidadesJugador.Pacto }) == 2 &&
+            HabilidadesJugador.DanioExtraPorVictoria(new List<string> { "Ojo Lunar" }) == 0 &&
+            HabilidadesJugador.DanioExtraPorVictoria(null) == 0,
+            "Pacto: las victorias hacen +2 de daño solo con la habilidad"
+        );
+    }
+
+    private void TestPactoReduceAlientoMaximo()
+    {
+        Comprobar(
+            HabilidadesJugador.AlientoMaximoTrasPacto(10) == 6 &&
+            HabilidadesJugador.AlientoMaximoTrasPacto(4) == 1 &&
+            HabilidadesJugador.AlientoMaximoTrasPacto(2) == 1,
+            "Pacto: el Aliento máximo baja 4 y nunca por debajo de 1"
+        );
     }
 
     private void Comprobar(bool condicion, string nombre)

@@ -104,12 +104,23 @@ public class GameManager : MonoBehaviour
         pruebaSaltada[i] = false;
 
         // Conceder la habilidad configurada en el BossData.
-        string habilidad = pruebas[i].habilidadOtorgada;
+        ConcederHabilidad(pruebas[i].habilidadOtorgada);
+    }
 
-        if (!string.IsNullOrEmpty(habilidad) &&
-            !habilidades.Contains(habilidad))
+    // Añade una habilidad y aplica su coste inmediato si lo tiene.
+    public void ConcederHabilidad(string habilidad)
+    {
+        if (string.IsNullOrEmpty(habilidad) ||
+            habilidades.Contains(habilidad))
+            return;
+
+        habilidades.Add(habilidad);
+
+        // Pacto (El Diablo): el Aliento máximo baja 4 para el resto de la partida.
+        if (habilidad == HabilidadesJugador.Pacto)
         {
-            habilidades.Add(habilidad);
+            alientoMaximo = HabilidadesJugador.AlientoMaximoTrasPacto(alientoMaximo);
+            aliento = Mathf.Min(aliento, alientoMaximo);
         }
     }
 

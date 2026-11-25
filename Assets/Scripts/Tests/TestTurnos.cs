@@ -57,6 +57,11 @@ public class TestTurnnos : MonoBehaviour
         TestListaNula();
         TestNumeroDeCartasIncorrecto();
 
+        TestPactoBajaAlientoMaximo();
+        TestPactoNoSeAplicaDosVeces();
+        TestOtraHabilidadNoBajaAliento();
+        TestNuevaPartidaRestauraAlientoTrasPacto();
+
         MostrarResultado();
         Limpiar();
     }
@@ -585,6 +590,63 @@ public class TestTurnnos : MonoBehaviour
         Comprobar(
             lanzoExcepcion,
             "La pista exige exactamente tres cartas"
+        );
+    }
+
+    // ---------- Pacto (051): Aliento máximo -4 al conseguirlo ----------
+
+    private void TestPactoBajaAlientoMaximo()
+    {
+        PrepararNuevaPartida();
+
+        gameManager.ConcederHabilidad(HabilidadesJugador.Pacto);
+
+        Comprobar(
+            gameManager.habilidades.Contains(HabilidadesJugador.Pacto) &&
+            gameManager.alientoMaximo == 6 &&
+            gameManager.aliento == 6,
+            "Pacto: el Aliento máximo baja de 10 a 6"
+        );
+    }
+
+    private void TestPactoNoSeAplicaDosVeces()
+    {
+        PrepararNuevaPartida();
+
+        gameManager.ConcederHabilidad(HabilidadesJugador.Pacto);
+        gameManager.ConcederHabilidad(HabilidadesJugador.Pacto);
+
+        Comprobar(
+            gameManager.alientoMaximo == 6 &&
+            gameManager.habilidades.Count == 1,
+            "Pacto: conseguirlo dos veces no resta Aliento otra vez"
+        );
+    }
+
+    private void TestOtraHabilidadNoBajaAliento()
+    {
+        PrepararNuevaPartida();
+
+        gameManager.ConcederHabilidad(HabilidadesJugador.OjoLunar);
+
+        Comprobar(
+            gameManager.alientoMaximo == 10 &&
+            gameManager.aliento == 10,
+            "Pacto: otras habilidades no cambian el Aliento máximo"
+        );
+    }
+
+    private void TestNuevaPartidaRestauraAlientoTrasPacto()
+    {
+        PrepararNuevaPartida();
+        gameManager.ConcederHabilidad(HabilidadesJugador.Pacto);
+
+        PrepararNuevaPartida();
+
+        Comprobar(
+            gameManager.alientoMaximo == 10 &&
+            gameManager.habilidades.Count == 0,
+            "Pacto: en una partida nueva el Aliento máximo vuelve a 10"
         );
     }
 
